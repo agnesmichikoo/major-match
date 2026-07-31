@@ -526,9 +526,18 @@ let musicPlaying = false;
 let musicMuted = false;
 let firstInteractionHandled = false;
 
-const MUSIC_VOLUME = 0.16;
-// Tangga nada pentatonis (C-D-E-G-A + oktaf) — kombinasi nada apa pun tetap terdengar tenang & tidak dissonan
-const CHIME_SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33];
+const MUSIC_VOLUME = 0.11;
+
+// Progresi akor lembut (Cmaj9 - Am7 - Fmaj7 - Gsus4) — semua interval konsonan,
+// tidak ada nada yang saling "bentrok", jadi terdengar tenang & instrumental.
+const CHORDS = [
+  [261.63, 329.63, 392.0, 493.88],  // C4 - E4 - G4 - B4 (Cmaj9)
+  [220.0, 261.63, 329.63, 392.0],   // A3 - C4 - E4 - G4 (Am7)
+  [174.61, 220.0, 261.63, 329.63],  // F3 - A3 - C4 - E4 (Fmaj7)
+  [196.0, 261.63, 293.66, 392.0]    // G3 - C4 - D4 - G4 (Gsus4)
+];
+let chordIndex = 0;
+const CHORD_DURATION = 9; // detik tiap akor "mengambang" sebelum berpindah
 
 function getAudioContext() {
   if (!audioCtx) {
@@ -596,9 +605,11 @@ function playCompletionSound() {
   }
 }
 
-// Musik latar calming versi baru: wind-chime pentatonis yang lembut —
-// beda karakter dari pad drone sebelumnya. Nada dipetik satu per satu
-// dengan jeda santai & sedikit acak, seperti lonceng angin yang tenang.
+// Musik latar calming versi baru: ambient pad instrumental yang lembut.
+// Alih-alih memetik satu nada acak, sekarang akor lengkap (3-4 nada) muncul
+// bersamaan lalu memudar perlahan (fade in ~2.5 detik, bertahan, fade out ~3 detik)
+// sebelum berpindah ke akor berikutnya secara halus — hasilnya terdengar
+// seperti musik instrumental yang mengalir tenang, bukan petikan nada tunggal.
 function startBackgroundMusic() {
   const ctx = getAudioContext();
   if (!ctx || musicPlaying) return;
@@ -611,48 +622,42 @@ function startBackgroundMusic() {
   scheduleNextChime();
 }
 
-// Nada bergaya piano: beberapa harmonik (nada dasar + overtone) dengan
-// serangan cepat (seperti palu piano memukul senar) dan peluruhan bertahap —
-// harmonik lebih tinggi meluruh lebih cepat, mirip karakter piano asli.
 function playChimeNote() {
   const ctx = getAudioContext();
   if (!ctx || !musicMasterGain) return;
 
-  const freq = CHIME_SCALE[Math.floor(Math.random() * CHIME_SCALE.length)];
+  const chordFreqs = CHORDS[chordIndex % CHORDS.length];
+  chordIndex++;
+
   const now = ctx.currentTime;
-  const decay = 2.6;
+  const attack = 2.5;
+  const release = 3;
+  const sustainLevel = 0.5 / chordFreqs.length;
 
-  const noteBus = ctx.createGain();
-  noteBus.gain.setValueAtTime(0.0001, now);
-  noteBus.gain.exponentialRampToValueAtTime(0.5, now + 0.015);
-  noteBus.gain.exponentialRampToValueAtTime(0.0001, now + decay);
-  noteBus.connect(musicMasterGain);
+  chordFreqs.forEach(function (freq) {
+    const osc = ctx.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
 
-  // Nada dasar (triangle wave sudah punya karakter hangat mirip piano tanpa perlu banyak osilator)
-  const osc = ctx.createOscillator();
-  osc.type = "triangle";
-  osc.frequency.value = freq;
-  osc.connect(noteBus);
-  osc.start(now);
-  osc.stop(now + decay + 0.1);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(sustainLevel, now + attack);
+    g.gain.setValueAtTime(sustainLevel, now + CHORD_DURATION - release);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + CHORD_DURATION);
 
-  // Satu overtone oktaf lembut untuk menambah kehangatan, volume tetap & sinkron dengan noteBus
-  const overtone = ctx.createOscillator();
-  overtone.type = "sine";
-  overtone.frequency.value = freq * 2;
-  const overtoneGain = ctx.createGain();
-  overtoneGain.gain.value = 0.18;
-  overtone.connect(overtoneGain);
-  overtoneGain.connect(noteBus);
-  overtone.start(now);
-  overtone.stop(now + decay + 0.1);
+    osc.connect(g);
+    g.connect(musicMasterGain);
+    osc.start(now);
+    osc.stop(now + CHORD_DURATION + 0.2);
+  });
 }
 
 function scheduleNextChime() {
   if (!musicPlaying) return;
   playChimeNote();
-  const nextDelay = 1800 + Math.random() * 1800; // 1.8–3.6 detik, santai & tidak monoton
-  musicTimeoutId = setTimeout(scheduleNextChime, nextDelay);
+  // Akor berikutnya mulai sedikit lebih awal dari akor sebelumnya selesai,
+  // supaya transisinya menyatu (crossfade), tidak ada jeda hening.
+  musicTimeoutId = setTimeout(scheduleNextChime, (CHORD_DURATION - 2.5) * 1000);
 }
 
 function setMusicIcon() {
