@@ -411,7 +411,7 @@ input { font-family: inherit; }
 
 .identitas-summary {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   background: var(--gray-light);
   border-radius: var(--radius-card);
