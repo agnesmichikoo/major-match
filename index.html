@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Major Match | Tes Minat Karier RIASEC</title>
+<title>Major Match | Tes Minat Jurusan RIASEC</title>
 
 <!-- Google Fonts: Poppins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,16 +25,8 @@
   <section id="page-landing" class="page active">
     <div class="landing-card card">
 
-      <div class="landing-topbar">
-        <div class="landing-credit">
-          <img src="assets/logo-binus.png" alt="BINUS University - Faculty of Humanities - Digital Psychology" class="binus-logo">
-          <div class="credit-text">
-            <p class="credit-name">Agnes Michiko Rahayu Tirta</p>
-            <p class="credit-detail">Digital Psychology</p>
-            <p class="credit-detail">B2029</p>
-            <p class="credit-detail">BINUS @Malang</p>
-          </div>
-        </div>
+      <div class="landing-header-bar">
+        <img src="assets/logo-binus.png" alt="BINUS University - Faculty of Humanities - Digital Psychology" class="binus-logo-small">
       </div>
 
       <div class="brand-badge">
@@ -51,12 +43,14 @@
       <h1 class="landing-title">MASIH BINGUNG PILIH JURUSAN?</h1>
       <p class="tagline">Kenali dirimu, temukan jurusanmu di sini!</p>
 
-      <p class="landing-desc">
-        Tes ini digunakan untuk mengetahui kecenderungan minat karier berdasarkan teori
-        John Holland (RIASEC). Bacalah setiap pernyataan dengan saksama dan jawablah sesuai
-        dengan kondisi diri Anda. Tidak ada jawaban benar maupun salah — jawaban yang jujur
-        akan membantu memberikan gambaran mengenai minat karier yang paling sesuai dengan diri Anda.
-      </p>
+      <div class="landing-desc-box">
+        <p class="landing-desc-lead">Nggak perlu nebak-nebak jurusan lagi!</p>
+        <ul class="landing-desc-list">
+          <li>Lewat tes ini, kamu bisa mengetahui bidang dan jurusan yang paling sesuai dengan minatmu.</li>
+          <li>Cukup jawab setiap pertanyaan dengan jujur karena nggak ada jawaban benar atau salah.</li>
+          <li><strong>PILIH JURUSAN = PILIH MASA DEPANMU</strong></li>
+        </ul>
+      </div>
 
       <div class="landing-illustration" aria-hidden="true">
         <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
@@ -84,49 +78,24 @@
         </svg>
       </div>
 
-      <button id="btn-mulai" class="btn btn-primary btn-lg">Mulai Tes</button>
+      <button id="btn-mulai" class="btn btn-primary btn-lg">Match My Major</button>
+
+      <div class="landing-footer-credit">
+        <p class="credit-name">Agnes Michiko Rahayu Tirta</p>
+        <p class="credit-detail">Digital Psychology</p>
+        <p class="credit-detail">B2029</p>
+        <p class="credit-detail">BINUS @Malang</p>
+      </div>
     </div>
+
   </section>
 
   <!-- ============================================================
-       HALAMAN 2 — IDENTITAS PESERTA
-  ============================================================= -->
-  <section id="page-identitas" class="page">
-    <div class="card form-card">
-      <p class="eyebrow">Langkah 1 dari 3</p>
-      <h2 class="page-title">Identitas Peserta</h2>
-      <p class="page-subtitle">Lengkapi data diri Anda sebelum memulai tes.</p>
-
-      <form id="form-identitas" novalidate>
-        <div class="form-group">
-          <label for="input-nama">Nama Lengkap</label>
-          <input type="text" id="input-nama" name="nama" placeholder="Masukkan nama lengkap" autocomplete="off">
-        </div>
-
-        <div class="form-group">
-          <label for="input-sekolah">Asal Sekolah</label>
-          <input type="text" id="input-sekolah" name="sekolah" placeholder="Masukkan asal sekolah" autocomplete="off">
-        </div>
-
-        <div class="form-group">
-          <label for="input-kelas">Kelas</label>
-          <input type="text" id="input-kelas" name="kelas" placeholder="Contoh: XI IPA 2" autocomplete="off">
-        </div>
-
-        <div class="form-actions">
-          <button type="button" id="btn-kembali-1" class="btn btn-ghost">Kembali</button>
-          <button type="submit" id="btn-lanjutkan" class="btn btn-primary">Lanjutkan</button>
-        </div>
-      </form>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       HALAMAN 3 — PETUNJUK PENGERJAAN
+       HALAMAN 2 — PETUNJUK PENGERJAAN
   ============================================================= -->
   <section id="page-petunjuk" class="page">
     <div class="card">
-      <p class="eyebrow">Langkah 2 dari 3</p>
+      <p class="eyebrow">Sebelum Mulai</p>
       <h2 class="page-title">Petunjuk Pengerjaan</h2>
 
       <div class="petunjuk-box">
@@ -134,7 +103,7 @@
           <li>Bacalah setiap pernyataan dengan saksama.</li>
           <li>Pilih <strong>"Ya"</strong> apabila pernyataan tersebut sesuai dengan diri Anda.</li>
           <li>Pilih <strong>"Tidak"</strong> apabila pernyataan tersebut tidak sesuai dengan diri Anda.</li>
-          <li>Jawablah secara jujur karena hasil tes ini hanya digunakan untuk mengetahui kecenderungan minat karier Anda.</li>
+          <li>Jawablah secara jujur karena hasil tes ini hanya digunakan untuk mengetahui kecenderungan minat jurusan Anda.</li>
           <li>Terdapat 42 pernyataan yang perlu dijawab seluruhnya.</li>
         </ul>
       </div>
@@ -147,7 +116,7 @@
   </section>
 
   <!-- ============================================================
-       HALAMAN 4 — TES RIASEC (42 PERTANYAAN)
+       HALAMAN 3 — TES RIASEC (42 PERTANYAAN)
   ============================================================= -->
   <section id="page-test" class="page">
     <div class="test-wrapper">
@@ -174,28 +143,22 @@
   </section>
 
   <!-- ============================================================
-       HALAMAN 5 — HASIL TES
+       HALAMAN 4 — HASIL TES
   ============================================================= -->
   <section id="page-hasil" class="page">
     <div id="hasil-print-area" class="hasil-wrapper">
 
       <div class="card hasil-header-card">
         <p class="eyebrow">Major Match</p>
-        <h2 class="page-title">Hasil Tes Minat Karier RIASEC</h2>
+        <h2 class="page-title">Here's Your Match!</h2>
         <p class="hasil-intro">
-          Terima kasih telah mengikuti RIASEC Career Interest Test. Berikut merupakan hasil
-          kecenderungan minat karier Anda berdasarkan teori John Holland.
+          <strong>Nice!</strong> Kamu sudah selangkah lebih dekat menemukan jurusan yang cocok.<br>
+          Pahami minatmu, pilih masa depanmu.
         </p>
-
-        <div class="identitas-summary">
-          <div><span class="id-label">Nama</span><span id="hasil-nama" class="id-value"></span></div>
-          <div><span class="id-label">Asal Sekolah</span><span id="hasil-sekolah" class="id-value"></span></div>
-          <div><span class="id-label">Kelas</span><span id="hasil-kelas" class="id-value"></span></div>
-        </div>
       </div>
 
       <div class="card">
-        <h3 class="section-title">Kode RIASEC Anda</h3>
+        <h3 class="section-title">Your Major Match</h3>
         <div class="riasec-code-display">
           <span id="riasec-code" class="riasec-code"></span>
         </div>
@@ -212,7 +175,7 @@
 
       <div class="card">
         <h3 class="section-title">Interpretasi Hasil</h3>
-        <p class="section-subtitle">Tiga tipe dengan skor tertinggi yang paling menggambarkan minat kariermu.</p>
+        <p class="section-subtitle">Tiga tipe dengan skor tertinggi yang paling menggambarkan minat jurusanmu.</p>
         <div id="interpretation-cards" class="interpretation-grid"></div>
       </div>
 
@@ -232,6 +195,11 @@
   </section>
 
 </div>
+
+<!-- Tombol musik latar (calming), muncul di semua halaman -->
+<button type="button" id="btn-music-toggle" class="music-toggle no-print" aria-label="Aktifkan atau matikan musik latar">
+  <span id="music-icon">🔊</span>
+</button>
 
 <!-- ================= LIBRARIES ================= -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
