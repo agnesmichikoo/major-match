@@ -528,11 +528,11 @@ let firstInteractionHandled = false;
 
 const MUSIC_VOLUME = 0.13;
 
-// Melodi ceria berulang (C major) bergaya xylophone/marimba —
-// cocok buat suasana tes minat bakat yang ringan & positif, bukan drone yang bikin serem.
-const MELODY = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.0, 783.99, 659.25, 523.25, 587.33, 659.25];
+// Melodi pentatonis mayor (C-D-E-G-A) yang hangat & positif tanpa lompatan
+// oktaf besar — lebih tenang dari versi sebelumnya, tapi tetap terasa ringan.
+const MELODY = [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 440.0];
 let melodyIndex = 0;
-const NOTE_INTERVAL = 0.38; // detik antar nada — bikin terasa riang & berirama
+const NOTE_INTERVAL = 0.62; // detik antar nada — lebih santai, tidak terburu-buru
 
 function getAudioContext() {
   if (!audioCtx) {
@@ -623,16 +623,16 @@ function playChimeNote() {
   melodyIndex++;
 
   const now = ctx.currentTime;
-  const decay = 0.42;
+  const decay = 0.65;
 
-  // Nada utama — pluck ceria & singkat (triangle wave lebih cerah dari sine)
+  // Nada utama — sine wave hangat & lembut (bukan triangle yang lebih cerah/riang)
   const osc = ctx.createOscillator();
-  osc.type = "triangle";
+  osc.type = "sine";
   osc.frequency.value = freq;
 
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, now);
-  g.gain.exponentialRampToValueAtTime(0.45, now + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.4, now + 0.015);
   g.gain.exponentialRampToValueAtTime(0.0001, now + decay);
 
   osc.connect(g);
@@ -640,15 +640,15 @@ function playChimeNote() {
   osc.start(now);
   osc.stop(now + decay + 0.05);
 
-  // Overtone oktaf lembut untuk kilauan/shimmer khas xylophone
+  // Overtone oktaf sangat tipis, hanya sedikit kehangatan tambahan
   const overtone = ctx.createOscillator();
   overtone.type = "sine";
   overtone.frequency.value = freq * 2;
 
   const og = ctx.createGain();
   og.gain.setValueAtTime(0.0001, now);
-  og.gain.exponentialRampToValueAtTime(0.14, now + 0.006);
-  og.gain.exponentialRampToValueAtTime(0.0001, now + decay * 0.7);
+  og.gain.exponentialRampToValueAtTime(0.07, now + 0.015);
+  og.gain.exponentialRampToValueAtTime(0.0001, now + decay * 0.6);
 
   overtone.connect(og);
   og.connect(musicMasterGain);
