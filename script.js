@@ -77,24 +77,39 @@ const CATEGORY_INFO = {
     name: "Investigative",
     color: "#7C3AED",
     desc: "Kamu senang berpikir logis, menganalisis sesuatu, memecahkan masalah, serta memiliki rasa ingin tahu yang tinggi. Kamu menyukai kegiatan yang membutuhkan penelitian, pengamatan, dan pemikiran yang mendalam.",
-    majors: ["Psikologi", "Kedokteran", "Informatika", "Biologi", "Farmasi"],
-    professions: ["Psikolog", "Dokter", "Peneliti", "Programmer", "Data Analyst"],
+    majors: ["Digital Psychology", "Psikologi", "Kedokteran", "Informatika", "Biologi", "Farmasi"],
+    professions: [
+      "Data Scientist", "AI Engineer", "Machine Learning Engineer", "UX Researcher",
+      "Behavioral Scientist", "Digital Psychology Research Scientist", "Bioinformatician",
+      "Data Analyst", "AI Ethics Researcher"
+    ],
     trait: "menyukai aktivitas analitis dan penelitian mendalam"
   },
   A: {
     name: "Artistic",
     color: "#7C3AED",
     desc: "Kamu memiliki jiwa kreatif dan ekspresif. Kamu menyukai seni, musik, tulisan, dan hal-hal yang memungkinkanmu berimajinasi bebas tanpa terikat aturan yang kaku.",
-    majors: ["Desain Komunikasi Visual", "Seni Rupa", "Sastra", "Film", "Musik"],
-    professions: ["Desainer Grafis", "Penulis", "Musisi", "Sutradara", "Arsitek"],
+    majors: ["Digital Psychology", "Desain Komunikasi Visual", "Seni Rupa", "Sastra", "Film", "Musik"],
+    professions: [
+      "UI/UX Designer", "Product Designer", "Content Creator", "Digital Illustrator",
+      "Motion Graphic Designer", "Game Designer", "Creative Director", "Brand Strategist",
+      "Video Producer", "Prompt Designer (Creative AI)"
+    ],
     trait: "menyukai ekspresi kreatif dan hal-hal artistik"
   },
   S: {
     name: "Social",
     color: "#7C3AED",
     desc: "Kamu senang membantu, mengajar, dan berinteraksi dengan orang lain. Kamu peduli terhadap kesejahteraan orang di sekitarmu dan senang bekerja dalam tim.",
-    majors: ["Psikologi", "Pendidikan", "Keperawatan", "Pekerjaan Sosial", "Bimbingan Konseling"],
-    professions: ["Guru", "Konselor", "Perawat", "Psikolog", "Pekerja Sosial"],
+    majors: ["Digital Psychology", "Psikologi", "Pendidikan", "Keperawatan", "Pekerjaan Sosial", "Bimbingan Konseling"],
+    professions: [
+      "Psychologist", "Counselor", "Teacher/Lecturer", "Career Coach",
+      "HR Development Specialist", "Learning Experience Designer", "Community Manager",
+      "Customer Success Manager", "Mental Health Practitioner", "Digital Psychologist",
+      "UX Researcher", "Behavioral Researcher", "Digital Well-being Specialist",
+      "People Experience Specialist", "Human-AI Interaction Specialist",
+      "Behavioral Insights Consultant", "Digital Mental Health Specialist"
+    ],
     trait: "senang membantu dan berinteraksi dengan orang lain"
   },
   E: {
@@ -102,15 +117,28 @@ const CATEGORY_INFO = {
     color: "#7C3AED",
     desc: "Kamu adalah pribadi yang ambisius, suka memimpin, dan pandai meyakinkan orang lain. Kamu tertarik pada bisnis, kepemimpinan, dan tantangan untuk mencapai suatu tujuan.",
     majors: ["Manajemen", "Bisnis", "Hukum", "Ilmu Komunikasi", "Hubungan Internasional"],
-    professions: ["Pengusaha", "Manajer", "Marketing", "Pengacara", "Politisi"],
+    professions: [
+      "Entrepreneur", "Tech Entrepreneur", "Startup Founder", "Product Manager",
+      "Business Development Manager", "Growth Marketing Manager", "Digital Marketing Strategist",
+      "Brand Manager", "Product Marketing Manager", "Innovation Consultant",
+      "Management Consultant", "E-commerce Manager", "Sales Manager", "Partnership Manager",
+      "Customer Experience (CX) Manager", "Venture Capital Analyst",
+      "Corporate Innovation Specialist", "Business Intelligence Consultant",
+      "AI Product Manager", "Digital Transformation Consultant"
+    ],
     trait: "memiliki potensi memimpin dan berkomunikasi persuasif"
   },
   C: {
     name: "Conventional",
     color: "#7C3AED",
     desc: "Kamu menyukai keteraturan, data, dan hal-hal yang terstruktur. Kamu teliti, rapi, dan nyaman bekerja dengan sistem, angka, maupun administrasi.",
-    majors: ["Akuntansi", "Administrasi Bisnis", "Sistem Informasi", "Perbankan", "Statistika"],
-    professions: ["Akuntan", "Analis Data", "Sekretaris", "Bankir", "Auditor"],
+    majors: ["Digital Psychology", "Akuntansi", "Administrasi Bisnis", "Sistem Informasi", "Perbankan", "Statistika"],
+    professions: [
+      "Business Analyst", "People Analytics Specialist", "Financial Analyst",
+      "Project Management Officer (PMO)", "Data Governance Specialist",
+      "Risk & Compliance Analyst", "AI Operations (AI Ops) Specialist", "HRIS Specialist",
+      "Digital Assessment Specialist", "Operations Analyst"
+    ],
     trait: "menyukai keteraturan, data, dan ketelitian administratif"
   }
 };
@@ -125,7 +153,6 @@ let state = {
   answers: {}      // { "1": "ya", "2": "tidak", ... }
 };
 
-let chartInstance = null;
 
 /* ============================================================
    3. LOCAL STORAGE HELPERS
@@ -275,6 +302,7 @@ function handleLihatHasil() {
   }
 
   computeAndRenderResults();
+  playCompletionSound();
   showPage("page-hasil");
 }
 
@@ -305,8 +333,11 @@ function computeAndRenderResults() {
 
   const maxScore = Math.max.apply(null, sorted.map(function (s) { return s.score; })) || 1;
 
-  // --- Kode RIASEC (3 huruf skor tertinggi) ---
-  const code = sorted.slice(0, 3).map(function (s) { return s.letter; }).join("");
+  // --- Deteksi kasus skor seimbang (semua 6 kategori bernilai sama) ---
+  const isBalanced = sorted.every(function (s) { return s.score === sorted[0].score; });
+
+  // --- Kode RIASEC (3 huruf skor tertinggi), atau label khusus jika seimbang ---
+  const code = isBalanced ? "SEIMBANG" : sorted.slice(0, 3).map(function (s) { return s.letter; }).join("");
   document.getElementById("riasec-code").textContent = code;
 
   // --- Daftar skor terurut ---
@@ -323,66 +354,25 @@ function computeAndRenderResults() {
     );
   }).join("");
 
-  // --- Grafik Chart.js ---
-  renderChart(sorted);
-
-  // --- Kartu interpretasi (3 tertinggi) ---
-  renderInterpretationCards(sorted.slice(0, 3));
+  // --- Kartu interpretasi (3 tertinggi), atau pesan khusus jika seimbang ---
+  renderInterpretationCards(sorted.slice(0, 3), isBalanced);
 
   // --- Kesimpulan otomatis ---
-  renderKesimpulan(sorted.slice(0, 3), code);
+  renderKesimpulan(sorted.slice(0, 3), code, isBalanced);
 }
 
-function renderChart(sortedScores) {
-  const ctx = document.getElementById("riasecChart").getContext("2d");
-
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
-
-  const labels = sortedScores.map(function (s) { return CATEGORY_INFO[s.letter].name; });
-  const data = sortedScores.map(function (s) { return s.score; });
-
-  chartInstance = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "Skor RIASEC",
-        data: data,
-        backgroundColor: "#A78BFA",
-        hoverBackgroundColor: "#7C3AED",
-        borderRadius: 8,
-        maxBarThickness: 46
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: "#7C3AED",
-          padding: 10,
-          cornerRadius: 8
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { stepSize: 1, color: "#6B6180" },
-          grid: { color: "#F3F4F6" }
-        },
-        x: {
-          ticks: { color: "#2D1B4E", font: { family: "Poppins", weight: "500" } },
-          grid: { display: false }
-        }
-      }
-    }
-  });
-}
-
-function renderInterpretationCards(top3) {
+function renderInterpretationCards(top3, isBalanced) {
   const container = document.getElementById("interpretation-cards");
+
+  if (isBalanced) {
+    container.innerHTML =
+      '<div class="balanced-message">' +
+        '<p>Kamu memiliki minat yang seimbang pada beberapa bidang.</p>' +
+        '<p>Artinya, kamu nyaman mempelajari berbagai jenis aktivitas, mulai dari praktik langsung, analisis, kreativitas, hingga bekerja sama dengan orang lain.</p>' +
+        '<p>Hasil ini menunjukkan bahwa kamu memiliki banyak pilihan jurusan dan karier untuk dieksplorasi.</p>' +
+      '</div>';
+    return;
+  }
 
   container.innerHTML = top3.map(function (s) {
     const info = CATEGORY_INFO[s.letter];
@@ -391,16 +381,26 @@ function renderInterpretationCards(top3) {
         '<div class="interp-letter-badge">' + s.letter + '</div>' +
         '<p class="interp-name">' + info.name + '</p>' +
         '<p class="interp-desc">' + info.desc + '</p>' +
-        '<p class="interp-subheading">Contoh Jurusan</p>' +
+        '<p class="interp-subheading">Recommended Majors</p>' +
         '<ul class="interp-list">' + info.majors.map(function (m) { return "<li>" + m + "</li>"; }).join("") + '</ul>' +
-        '<p class="interp-subheading">Contoh Profesi</p>' +
+        '<p class="interp-subheading">Career Opportunities</p>' +
         '<ul class="interp-list">' + info.professions.map(function (p) { return "<li>" + p + "</li>"; }).join("") + '</ul>' +
       '</div>'
     );
   }).join("");
 }
 
-function renderKesimpulan(top3, code) {
+function renderKesimpulan(top3, code, isBalanced) {
+  const kesimpulanEl = document.getElementById("kesimpulan-text");
+
+  if (isBalanced) {
+    kesimpulanEl.innerHTML =
+      '<p>Kamu memiliki minat yang seimbang pada beberapa bidang.</p>' +
+      '<p>Artinya, kamu nyaman mempelajari berbagai jenis aktivitas, mulai dari praktik langsung, analisis, kreativitas, hingga bekerja sama dengan orang lain.</p>' +
+      '<p>Hasil ini menunjukkan bahwa kamu memiliki banyak pilihan jurusan dan karier untuk dieksplorasi.</p>';
+    return;
+  }
+
   const names = top3.map(function (s) { return CATEGORY_INFO[s.letter].name; });
   const traits = top3.map(function (s) { return CATEGORY_INFO[s.letter].trait; });
 
@@ -421,13 +421,15 @@ function renderKesimpulan(top3, code) {
 
   const majorsText = majorsSet.slice(0, 5).join(", ");
 
-  const text =
-    "Berdasarkan hasil tes, Anda memiliki kecenderungan minat jurusan pada tipe " + namesText +
-    " (" + code + "). Hal ini menunjukkan bahwa Anda cenderung " + traitsText +
-    ". Bidang studi seperti " + majorsText +
-    " dapat menjadi pilihan yang sesuai dengan karakteristik Anda.";
+  const paragraph1 =
+    "Berdasarkan hasil tes, Anda memiliki kecenderungan minat jurusan pada tipe " + namesText + " (" + code + ").";
+  const paragraph2 =
+    "Hal ini menunjukkan bahwa Anda cenderung " + traitsText + ".";
+  const paragraph3 =
+    "Bidang studi seperti " + majorsText + " dapat menjadi pilihan yang sesuai dengan karakteristik Anda.";
 
-  document.getElementById("kesimpulan-text").textContent = text;
+  kesimpulanEl.innerHTML =
+    "<p>" + paragraph1 + "</p><p>" + paragraph2 + "</p><p>" + paragraph3 + "</p>";
 }
 
 /* ============================================================
@@ -552,6 +554,36 @@ function playClickSound() {
     osc.stop(now + 0.12);
   } catch (e) {
     console.warn("Gagal memutar bunyi klik:", e);
+  }
+}
+
+// Bunyi khusus (bukan klik) saat pengguna selesai menjawab seluruh soal
+// dan berhasil masuk ke halaman hasil — chime lembut 3 nada naik.
+function playCompletionSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 — chime "berhasil"
+
+    notes.forEach(function (freq, i) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+
+      const startTime = now + i * 0.13;
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.16, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.55);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.6);
+    });
+  } catch (e) {
+    console.warn("Gagal memutar bunyi selesai:", e);
   }
 }
 
