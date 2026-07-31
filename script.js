@@ -1,598 +1,631 @@
 /* ==========================================================================
    MY CAREER CAMPUS — RIASEC Career Interest Test
-   script.js
+   Stylesheet
    ========================================================================== */
 
-/* ============================================================
-   1. DATA: PERTANYAAN & MAPPING KATEGORI RIASEC
-   ============================================================ */
+/* ---------- Design tokens ---------- */
+:root {
+  --purple-primary: #7C3AED;
+  --purple-light: #A78BFA;
+  --lavender: #EDE9FE;
+  --white: #FFFFFF;
+  --gray-light: #F3F4F6;
 
-// 42 pernyataan tes, index array 0 = soal nomor 1, dst.
-const QUESTIONS = [
-  "Saya suka pekerjaan yang berkaitan dengan mesin/kendaraan.",
-  "Saya suka dengan teka-teki.",
-  "Saya mampu bekerja secara mandiri.",
-  "Saya suka bekerja dalam kelompok.",
-  "Saya adalah seorang yang ambisius, saya menetapkan tujuan untuk diri sendiri.",
-  "Saya suka mengorganisir suatu hal (dokumen, meja/alat kerja).",
-  "Saya suka untuk membuat/membangun sesuatu.",
-  "Saya suka membaca tentang kesenian dan musik.",
-  "Saya menyukai instruksi yang jelas untuk diikuti.",
-  "Saya suka untuk mempengaruhi/meyakinkan orang lain.",
-  "Saya suka bereksperimen.",
-  "Saya suka mengajar dan melatih orang.",
-  "Saya suka mencoba untuk membantu orang lain dalam menyelesaikan/memecahkan masalah.",
-  "Saya suka merawat binatang.",
-  "Saya tidak keberatan bekerja 8 jam dalam satu hari di kantor.",
-  "Saya suka menjual berbagai macam barang.",
-  "Saya menggemari menulis kreatif.",
-  "Saya menyukai/memiliki minat pada bidang sains.",
-  "Saya cepat beradaptasi dengan tanggung jawab baru.",
-  "Saya tertarik untuk menyembuhkan orang lain.",
-  "Saya senang mencari tahu bagaimana segala sesuatu dapat berfungsi.",
-  "Saya suka menyusun atau merakit sesuatu.",
-  "Saya adalah orang yang kreatif.",
-  "Saya memperhatikan hal-hal secara terperinci/detail.",
-  "Saya suka melakukan pengarsipan atau mengetik data.",
-  "Saya suka menganalisis sesuatu (permasalahan atau situasi).",
-  "Saya suka memainkan instrumen musik atau menyanyi.",
-  "Saya suka mempelajari budaya lain.",
-  "Saya ingin memulai bisnis saya sendiri.",
-  "Saya suka memasak.",
-  "Saya suka bermain peran/akting.",
-  "Saya merupakan orang yang praktis.",
-  "Saya suka bekerja dengan angka dan grafik.",
-  "Saya suka berdiskusi mengenai berbagai permasalahan.",
-  "Saya mampu menyimpan catatan pekerjaan saya dengan baik.",
-  "Saya suka memimpin.",
-  "Saya suka bekerja di luar ruangan.",
-  "Saya lebih menginginkan bekerja di dalam kantor.",
-  "Saya pandai dalam bidang matematika.",
-  "Saya suka menolong orang lain.",
-  "Saya suka menggambar.",
-  "Saya suka memberi ceramah/berbicara di depan umum."
-];
+  --text-dark: #2D1B4E;
+  --text-muted: #6B6180;
 
-// Mapping nomor soal (1-based) ke masing-masing kategori RIASEC
-const RIASEC_MAPPING = {
-  R: [1, 7, 14, 22, 30, 32, 37],
-  I: [2, 11, 18, 21, 26, 33, 39],
-  A: [8, 17, 23, 27, 31, 41],
-  S: [4, 12, 13, 20, 28, 34, 40],
-  E: [5, 10, 16, 19, 29, 36, 42],
-  C: [6, 9, 15, 24, 25, 35, 38]
-};
+  --radius-card: 15px;
+  --radius-btn: 12px;
 
-// Informasi deskriptif tiap kategori RIASEC, digunakan pada halaman hasil
-const CATEGORY_INFO = {
-  R: {
-    name: "Realistic",
-    color: "#7C3AED",
-    desc: "Kamu menyukai kegiatan praktis, menggunakan alat, mesin, atau bekerja dengan tangan. Kamu cenderung menyukai aktivitas fisik, suka bekerja di luar ruangan, serta lebih menyukai hal-hal konkret dibanding teori.",
-    majors: ["Teknik Mesin", "Teknik Sipil", "Pertanian", "Teknik Otomotif", "Kehutanan"],
-    professions: ["Insinyur", "Mekanik", "Ahli Agronomi", "Pilot", "Atlet"],
-    trait: "menyukai aktivitas praktis dan bekerja dengan tangan"
-  },
-  I: {
-    name: "Investigative",
-    color: "#7C3AED",
-    desc: "Kamu senang berpikir logis, menganalisis sesuatu, memecahkan masalah, serta memiliki rasa ingin tahu yang tinggi. Kamu menyukai kegiatan yang membutuhkan penelitian, pengamatan, dan pemikiran yang mendalam.",
-    majors: ["Psikologi", "Kedokteran", "Informatika", "Biologi", "Farmasi"],
-    professions: ["Psikolog", "Dokter", "Peneliti", "Programmer", "Data Analyst"],
-    trait: "menyukai aktivitas analitis dan penelitian mendalam"
-  },
-  A: {
-    name: "Artistic",
-    color: "#7C3AED",
-    desc: "Kamu memiliki jiwa kreatif dan ekspresif. Kamu menyukai seni, musik, tulisan, dan hal-hal yang memungkinkanmu berimajinasi bebas tanpa terikat aturan yang kaku.",
-    majors: ["Desain Komunikasi Visual", "Seni Rupa", "Sastra", "Film", "Musik"],
-    professions: ["Desainer Grafis", "Penulis", "Musisi", "Sutradara", "Arsitek"],
-    trait: "menyukai ekspresi kreatif dan hal-hal artistik"
-  },
-  S: {
-    name: "Social",
-    color: "#7C3AED",
-    desc: "Kamu senang membantu, mengajar, dan berinteraksi dengan orang lain. Kamu peduli terhadap kesejahteraan orang di sekitarmu dan senang bekerja dalam tim.",
-    majors: ["Psikologi", "Pendidikan", "Keperawatan", "Pekerjaan Sosial", "Bimbingan Konseling"],
-    professions: ["Guru", "Konselor", "Perawat", "Psikolog", "Pekerja Sosial"],
-    trait: "senang membantu dan berinteraksi dengan orang lain"
-  },
-  E: {
-    name: "Enterprising",
-    color: "#7C3AED",
-    desc: "Kamu adalah pribadi yang ambisius, suka memimpin, dan pandai meyakinkan orang lain. Kamu tertarik pada bisnis, kepemimpinan, dan tantangan untuk mencapai suatu tujuan.",
-    majors: ["Manajemen", "Bisnis", "Hukum", "Ilmu Komunikasi", "Hubungan Internasional"],
-    professions: ["Pengusaha", "Manajer", "Marketing", "Pengacara", "Politisi"],
-    trait: "memiliki potensi memimpin dan berkomunikasi persuasif"
-  },
-  C: {
-    name: "Conventional",
-    color: "#7C3AED",
-    desc: "Kamu menyukai keteraturan, data, dan hal-hal yang terstruktur. Kamu teliti, rapi, dan nyaman bekerja dengan sistem, angka, maupun administrasi.",
-    majors: ["Akuntansi", "Administrasi Bisnis", "Sistem Informasi", "Perbankan", "Statistika"],
-    professions: ["Akuntan", "Analis Data", "Sekretaris", "Bankir", "Auditor"],
-    trait: "menyukai keteraturan, data, dan ketelitian administratif"
-  }
-};
+  --shadow-soft: 0 8px 30px rgba(124, 58, 237, 0.12);
+  --shadow-hover: 0 14px 40px rgba(124, 58, 237, 0.2);
 
-const STORAGE_KEY = "myCareerCampus_riasecData";
-
-/* ============================================================
-   2. STATE APLIKASI
-   ============================================================ */
-
-let state = {
-  identitas: { nama: "", sekolah: "", kelas: "" },
-  answers: {}      // { "1": "ya", "2": "tidak", ... }
-};
-
-let chartInstance = null;
-
-/* ============================================================
-   3. LOCAL STORAGE HELPERS
-   ============================================================ */
-
-function saveStateToStorage() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.warn("Gagal menyimpan data ke localStorage:", e);
-  }
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-function loadStateFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && parsed.identitas && parsed.answers) {
-        state = parsed;
-      }
-    }
-  } catch (e) {
-    console.warn("Gagal memuat data dari localStorage:", e);
-  }
+/* ---------- Reset ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  color: var(--text-dark);
+  background: linear-gradient(135deg, #7C3AED, #A78BFA, #EDE9FE);
+  background-attachment: fixed;
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-function clearStateStorage() {
-  localStorage.removeItem(STORAGE_KEY);
-  state = { identitas: { nama: "", sekolah: "", kelas: "" }, answers: {} };
+img, svg { display: block; max-width: 100%; }
+
+button { font-family: inherit; cursor: pointer; border: none; }
+input { font-family: inherit; }
+
+/* ---------- Layout shell ---------- */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px;
 }
 
-/* ============================================================
-   4. NAVIGASI ANTAR HALAMAN
-   ============================================================ */
-
-function showPage(pageId) {
-  document.querySelectorAll(".page").forEach(function (el) {
-    el.classList.remove("active");
-  });
-  const target = document.getElementById(pageId);
-  if (target) {
-    target.classList.add("active");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+/* ---------- Page visibility & transitions ---------- */
+.page {
+  display: none;
+  width: 100%;
+  max-width: 900px;
 }
 
-/* ============================================================
-   5. HALAMAN IDENTITAS
-   ============================================================ */
-
-function prefillIdentitasForm() {
-  document.getElementById("input-nama").value = state.identitas.nama || "";
-  document.getElementById("input-sekolah").value = state.identitas.sekolah || "";
-  document.getElementById("input-kelas").value = state.identitas.kelas || "";
+.page.active {
+  display: block;
+  animation: fadeInUp 0.45s ease both;
 }
 
-function handleIdentitasSubmit(e) {
-  e.preventDefault();
-
-  const nama = document.getElementById("input-nama");
-  const sekolah = document.getElementById("input-sekolah");
-  const kelas = document.getElementById("input-kelas");
-
-  const fields = [nama, sekolah, kelas];
-  let hasEmpty = false;
-
-  fields.forEach(function (field) {
-    if (!field.value.trim()) {
-      field.classList.add("input-error");
-      hasEmpty = true;
-    } else {
-      field.classList.remove("input-error");
-    }
-  });
-
-  if (hasEmpty) {
-    Swal.fire({
-      icon: "warning",
-      title: "Data belum lengkap",
-      text: "Mohon lengkapi seluruh data identitas sebelum melanjutkan.",
-      confirmButtonColor: "#7C3AED"
-    });
-    return;
-  }
-
-  state.identitas = {
-    nama: nama.value.trim(),
-    sekolah: sekolah.value.trim(),
-    kelas: kelas.value.trim()
-  };
-  saveStateToStorage();
-
-  showPage("page-petunjuk");
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ============================================================
-   6. HALAMAN TES — RENDER PERTANYAAN & PROGRESS
-   ============================================================ */
-
-function renderQuestions() {
-  const container = document.getElementById("questions-container");
-  container.innerHTML = "";
-
-  QUESTIONS.forEach(function (text, idx) {
-    const qNum = idx + 1;
-    const savedAnswer = state.answers[qNum];
-
-    const card = document.createElement("div");
-    card.className = "question-card card" + (savedAnswer ? " answered" : "");
-    card.id = "question-" + qNum;
-
-    card.innerHTML =
-      '<div class="question-top">' +
-        '<span class="question-number">' + qNum + '</span>' +
-        '<p class="question-text">' + text + '</p>' +
-      '</div>' +
-      '<div class="answer-options">' +
-        '<label class="answer-option' + (savedAnswer === "ya" ? " selected" : "") + '" data-q="' + qNum + '" data-val="ya">' +
-          '<input type="radio" name="q' + qNum + '" value="ya"' + (savedAnswer === "ya" ? " checked" : "") + '>' +
-          '<span>Ya</span>' +
-        '</label>' +
-        '<label class="answer-option' + (savedAnswer === "tidak" ? " selected" : "") + '" data-q="' + qNum + '" data-val="tidak">' +
-          '<input type="radio" name="q' + qNum + '" value="tidak"' + (savedAnswer === "tidak" ? " checked" : "") + '>' +
-          '<span>Tidak</span>' +
-        '</label>' +
-      '</div>';
-
-    container.appendChild(card);
-  });
-
-  // Delegasikan event perubahan jawaban
-  container.addEventListener("change", handleAnswerChange);
-  updateProgress();
+/* ---------- Card ---------- */
+.card {
+  background: var(--white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  padding: 40px;
+  margin-bottom: 20px;
+  transition: var(--transition-smooth);
 }
 
-function handleAnswerChange(e) {
-  const input = e.target;
-  if (input.type !== "radio") return;
-
-  const qNum = input.name.replace("q", "");
-  const value = input.value;
-
-  state.answers[qNum] = value;
-  saveStateToStorage();
-
-  // Update tampilan kartu & opsi terpilih
-  const card = document.getElementById("question-" + qNum);
-  card.classList.add("answered");
-  card.classList.remove("unanswered-flag");
-
-  card.querySelectorAll(".answer-option").forEach(function (opt) {
-    opt.classList.toggle("selected", opt.dataset.val === value);
-  });
-
-  updateProgress();
+/* ---------- Typography ---------- */
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--purple-primary);
+  margin-bottom: 10px;
 }
 
-function updateProgress() {
-  const total = QUESTIONS.length;
-  const answered = Object.keys(state.answers).length;
-  const percent = Math.round((answered / total) * 100);
-
-  document.getElementById("progress-count").textContent = answered + " / " + total + " Pertanyaan";
-  document.getElementById("progress-percent").textContent = percent + "%";
-  document.getElementById("progress-bar-fill").style.width = percent + "%";
+.landing-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 8px;
 }
 
-function handleLihatHasil() {
-  const unanswered = [];
-  for (let i = 1; i <= QUESTIONS.length; i++) {
-    if (!state.answers[i]) unanswered.push(i);
-  }
-
-  if (unanswered.length > 0) {
-    Swal.fire({
-      icon: "warning",
-      title: "Masih ada pertanyaan yang belum dijawab",
-      text: "Terdapat " + unanswered.length + " pertanyaan yang belum Anda jawab. Mohon lengkapi seluruh pertanyaan terlebih dahulu.",
-      confirmButtonColor: "#7C3AED"
-    });
-
-    // Tandai & scroll ke pertanyaan pertama yang belum dijawab
-    const firstUnansweredCard = document.getElementById("question-" + unanswered[0]);
-    document.querySelectorAll(".unanswered-flag").forEach(function (el) {
-      el.classList.remove("unanswered-flag");
-    });
-    unanswered.forEach(function (num) {
-      const c = document.getElementById("question-" + num);
-      if (c) c.classList.add("unanswered-flag");
-    });
-    if (firstUnansweredCard) {
-      firstUnansweredCard.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-    return;
-  }
-
-  computeAndRenderResults();
-  showPage("page-hasil");
+.tagline {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--purple-primary);
+  margin-bottom: 20px;
 }
 
-/* ============================================================
-   7. PERHITUNGAN SKOR & HALAMAN HASIL
-   ============================================================ */
-
-function computeScores() {
-  const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
-
-  Object.keys(RIASEC_MAPPING).forEach(function (letter) {
-    RIASEC_MAPPING[letter].forEach(function (qNum) {
-      if (state.answers[qNum] === "ya") {
-        scores[letter] += 1;
-      }
-    });
-  });
-
-  return scores;
+.landing-desc-box {
+  text-align: left;
+  max-width: 560px;
+  margin: 0 auto 28px;
+  background: var(--lavender);
+  border-radius: var(--radius-card);
+  padding: 22px 26px;
 }
 
-function computeAndRenderResults() {
-  // --- Identitas ---
-  document.getElementById("hasil-nama").textContent = state.identitas.nama;
-  document.getElementById("hasil-sekolah").textContent = state.identitas.sekolah;
-  document.getElementById("hasil-kelas").textContent = state.identitas.kelas;
-
-  // --- Skor & urutan ---
-  const scores = computeScores();
-  const sorted = Object.keys(scores)
-    .map(function (letter) { return { letter: letter, score: scores[letter] }; })
-    .sort(function (a, b) { return b.score - a.score; });
-
-  const maxScore = Math.max.apply(null, sorted.map(function (s) { return s.score; })) || 1;
-
-  // --- Kode RIASEC (3 huruf skor tertinggi) ---
-  const code = sorted.slice(0, 3).map(function (s) { return s.letter; }).join("");
-  document.getElementById("riasec-code").textContent = code;
-
-  // --- Daftar skor terurut ---
-  const scoreListEl = document.getElementById("score-list");
-  scoreListEl.innerHTML = sorted.map(function (s) {
-    const info = CATEGORY_INFO[s.letter];
-    const widthPercent = Math.round((s.score / maxScore) * 100);
-    return (
-      '<div class="score-row">' +
-        '<span class="score-row-label">' + info.name + ' (' + s.letter + ')</span>' +
-        '<div class="score-row-track"><div class="score-row-fill" style="width:' + widthPercent + '%"></div></div>' +
-        '<span class="score-row-value">' + s.score + '</span>' +
-      '</div>'
-    );
-  }).join("");
-
-  // --- Grafik Chart.js ---
-  renderChart(sorted);
-
-  // --- Kartu interpretasi (3 tertinggi) ---
-  renderInterpretationCards(sorted.slice(0, 3));
-
-  // --- Kesimpulan otomatis ---
-  renderKesimpulan(sorted.slice(0, 3), code);
+.landing-desc-lead {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--purple-primary);
+  margin-bottom: 12px;
 }
 
-function renderChart(sortedScores) {
-  const ctx = document.getElementById("riasecChart").getContext("2d");
-
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
-
-  const labels = sortedScores.map(function (s) { return CATEGORY_INFO[s.letter].name; });
-  const data = sortedScores.map(function (s) { return s.score; });
-
-  chartInstance = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "Skor RIASEC",
-        data: data,
-        backgroundColor: "#A78BFA",
-        hoverBackgroundColor: "#7C3AED",
-        borderRadius: 8,
-        maxBarThickness: 46
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: "#7C3AED",
-          padding: 10,
-          cornerRadius: 8
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { stepSize: 1, color: "#6B6180" },
-          grid: { color: "#F3F4F6" }
-        },
-        x: {
-          ticks: { color: "#2D1B4E", font: { family: "Poppins", weight: "500" } },
-          grid: { display: false }
-        }
-      }
-    }
-  });
+.landing-desc-list {
+  list-style: none;
 }
 
-function renderInterpretationCards(top3) {
-  const container = document.getElementById("interpretation-cards");
-
-  container.innerHTML = top3.map(function (s) {
-    const info = CATEGORY_INFO[s.letter];
-    return (
-      '<div class="interpretation-card">' +
-        '<div class="interp-letter-badge">' + s.letter + '</div>' +
-        '<p class="interp-name">' + info.name + '</p>' +
-        '<p class="interp-desc">' + info.desc + '</p>' +
-        '<p class="interp-subheading">Contoh Jurusan</p>' +
-        '<ul class="interp-list">' + info.majors.map(function (m) { return "<li>" + m + "</li>"; }).join("") + '</ul>' +
-        '<p class="interp-subheading">Contoh Profesi</p>' +
-        '<ul class="interp-list">' + info.professions.map(function (p) { return "<li>" + p + "</li>"; }).join("") + '</ul>' +
-      '</div>'
-    );
-  }).join("");
+.landing-desc-list li {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--text-dark);
 }
 
-function renderKesimpulan(top3, code) {
-  const names = top3.map(function (s) { return CATEGORY_INFO[s.letter].name; });
-  const traits = top3.map(function (s) { return CATEGORY_INFO[s.letter].trait; });
+.landing-desc-list li:last-child { margin-bottom: 0; }
 
-  const majorsSet = [];
-  top3.forEach(function (s) {
-    CATEGORY_INFO[s.letter].majors.slice(0, 2).forEach(function (m) {
-      if (majorsSet.indexOf(m) === -1) majorsSet.push(m);
-    });
-  });
-
-  const namesText = names.length === 3
-    ? names[0] + ", " + names[1] + ", dan " + names[2]
-    : names.join(", ");
-
-  const traitsText = traits.length === 3
-    ? traits[0] + ", " + traits[1] + ", serta " + traits[2]
-    : traits.join(", ");
-
-  const majorsText = majorsSet.slice(0, 5).join(", ");
-
-  const text =
-    "Berdasarkan hasil tes, Anda memiliki kecenderungan minat karier pada tipe " + namesText +
-    " (" + code + "). Hal ini menunjukkan bahwa Anda cenderung " + traitsText +
-    ". Bidang studi seperti " + majorsText +
-    " dapat menjadi pilihan yang sesuai dengan karakteristik Anda.";
-
-  document.getElementById("kesimpulan-text").textContent = text;
+.landing-desc-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--purple-primary);
 }
 
-/* ============================================================
-   8. AKSI HALAMAN HASIL: CETAK, DOWNLOAD PDF, ULANGI, BERANDA
-   ============================================================ */
-
-function handleCetak() {
-  window.print();
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 
-function handleDownloadPDF() {
-  const target = document.getElementById("hasil-print-area");
-
-  Swal.fire({
-    title: "Menyiapkan PDF...",
-    allowOutsideClick: false,
-    didOpen: function () { Swal.showLoading(); }
-  });
-
-  html2canvas(target, { scale: 2, backgroundColor: "#ffffff", useCORS: true }).then(function (canvas) {
-    const imgData = canvas.toDataURL("image/png");
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("p", "mm", "a4");
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-
-    const fileName = "Hasil_RIASEC_" + (state.identitas.nama || "Peserta").replace(/\s+/g, "_") + ".pdf";
-    pdf.save(fileName);
-    Swal.close();
-  }).catch(function (err) {
-    console.error(err);
-    Swal.fire({
-      icon: "error",
-      title: "Gagal membuat PDF",
-      text: "Terjadi kesalahan saat membuat file PDF. Silakan coba lagi.",
-      confirmButtonColor: "#7C3AED"
-    });
-  });
+.page-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 26px;
 }
 
-function handleUlangiTes() {
-  Swal.fire({
-    icon: "question",
-    title: "Ulangi Tes?",
-    text: "Seluruh jawaban Anda akan dihapus dan Anda akan memulai tes dari awal.",
-    showCancelButton: true,
-    confirmButtonText: "Ya, ulangi",
-    cancelButtonText: "Batal",
-    confirmButtonColor: "#7C3AED",
-    cancelButtonColor: "#9CA3AF"
-  }).then(function (result) {
-    if (result.isConfirmed) {
-      clearStateStorage();
-      document.getElementById("form-identitas").reset();
-      showPage("page-landing");
-    }
-  });
+.section-title {
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 
-function handleKembaliBeranda() {
-  showPage("page-landing");
+.section-subtitle {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
 }
 
-/* ============================================================
-   9. INISIALISASI & EVENT LISTENERS
-   ============================================================ */
+/* ---------- Landing page ---------- */
+.landing-card {
+  text-align: center;
+}
 
-document.addEventListener("DOMContentLoaded", function () {
-  loadStateFromStorage();
-  prefillIdentitasForm();
-  renderQuestions();
+.landing-header-bar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 22px;
+}
 
-  document.getElementById("btn-mulai").addEventListener("click", function () {
-    showPage("page-identitas");
-  });
+.binus-logo-small {
+  height: 34px;
+  width: auto;
+}
 
-  document.getElementById("btn-kembali-1").addEventListener("click", function () {
-    showPage("page-landing");
-  });
+.landing-footer-credit {
+  text-align: right;
+  margin-top: 22px;
+}
 
-  document.getElementById("form-identitas").addEventListener("submit", handleIdentitasSubmit);
+.credit-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
 
-  document.getElementById("btn-kembali-2").addEventListener("click", function () {
-    showPage("page-identitas");
-  });
+.credit-detail {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
 
-  document.getElementById("btn-mulai-tes").addEventListener("click", function () {
-    showPage("page-test");
-  });
+.brand-badge {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
 
-  document.getElementById("btn-lihat-hasil").addEventListener("click", handleLihatHasil);
+.brand-icon { width: 56px; height: 56px; }
 
-  document.getElementById("btn-cetak").addEventListener("click", handleCetak);
-  document.getElementById("btn-download-pdf").addEventListener("click", handleDownloadPDF);
-  document.getElementById("btn-ulangi").addEventListener("click", handleUlangiTes);
-  document.getElementById("btn-beranda").addEventListener("click", handleKembaliBeranda);
-});
+.landing-illustration {
+  max-width: 340px;
+  margin: 0 auto 30px;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: var(--radius-btn);
+  font-size: 14.5px;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.btn-lg { padding: 16px 40px; font-size: 16px; }
+.btn-block { width: 100%; }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+  color: var(--white);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(124, 58, 237, 0.45);
+}
+
+.btn-secondary {
+  background: var(--lavender);
+  color: var(--purple-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--purple-light);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid #E2DDF0 !important;
+}
+
+.btn-ghost:hover {
+  border-color: var(--purple-primary) !important;
+  color: var(--purple-primary);
+}
+
+.btn:active { transform: translateY(0); }
+
+/* ---------- Forms ---------- */
+.form-card { max-width: 560px; margin: 0 auto; }
+
+.form-group { margin-bottom: 18px; text-align: left; }
+
+.form-group label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-dark);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-light);
+  background: var(--gray-light);
+  font-size: 14px;
+  color: var(--text-dark);
+  transition: var(--transition-smooth);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--purple-primary);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+}
+
+.form-group input.input-error {
+  border-color: #EF4444;
+  background: #FEF2F2;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+/* ---------- Petunjuk ---------- */
+.petunjuk-box {
+  background: var(--lavender);
+  border-radius: var(--radius-card);
+  padding: 24px 26px;
+  margin-bottom: 8px;
+}
+
+.petunjuk-list { list-style: none; }
+
+.petunjuk-list li {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 12px;
+  font-size: 14.5px;
+  color: var(--text-dark);
+}
+
+.petunjuk-list li:last-child { margin-bottom: 0; }
+
+.petunjuk-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--purple-primary);
+}
+
+/* ---------- Test page ---------- */
+.test-wrapper { width: 100%; }
+
+.test-header { position: sticky; top: 20px; z-index: 10; margin-bottom: 24px; padding: 22px 28px; }
+
+.test-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.test-header-label { font-weight: 700; color: var(--purple-primary); font-size: 14px; }
+
+.progress-count { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+
+.progress-bar-track {
+  width: 100%;
+  height: 10px;
+  background: var(--gray-light);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 20px;
+  background: linear-gradient(90deg, var(--purple-primary), var(--purple-light));
+  transition: width 0.35s ease;
+}
+
+.progress-percent {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: var(--purple-primary);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.question-card {
+  padding: 26px 28px;
+  transition: var(--transition-smooth);
+}
+
+.question-card.answered { border-left: 4px solid var(--purple-primary); }
+
+.question-card.unanswered-flag {
+  animation: shakeError 0.4s;
+  border-left: 4px solid #EF4444;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.question-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.question-number {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--lavender);
+  color: var(--purple-primary);
+  font-weight: 700;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.question-text { font-size: 15px; font-weight: 500; padding-top: 5px; }
+
+.answer-options { display: flex; gap: 14px; padding-left: 46px; }
+
+.answer-option {
+  flex: 1;
+  max-width: 160px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-light);
+  background: var(--gray-light);
+  transition: var(--transition-smooth);
+}
+
+.answer-option:hover { border-color: var(--purple-light); background: var(--lavender); }
+
+.answer-option input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--purple-primary);
+  cursor: pointer;
+}
+
+.answer-option label {
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.answer-option.selected {
+  border-color: var(--purple-primary);
+  background: var(--lavender);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.test-footer { padding: 22px 28px; }
+
+/* ---------- Hasil page ---------- */
+.hasil-wrapper { width: 100%; }
+
+.hasil-header-card { text-align: center; }
+
+.hasil-intro {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 640px;
+  margin: 10px auto 26px;
+}
+
+.riasec-code-display { text-align: center; margin-bottom: 26px; }
+
+.riasec-code {
+  display: inline-block;
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+  padding: 14px 40px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+}
+
+.score-list { display: flex; flex-direction: column; gap: 12px; }
+
+.score-row { display: flex; align-items: center; gap: 14px; }
+
+.score-row-label { width: 170px; flex-shrink: 0; font-size: 13.5px; font-weight: 600; }
+
+.score-row-track {
+  flex: 1;
+  height: 12px;
+  background: var(--gray-light);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.score-row-fill {
+  height: 100%;
+  border-radius: 20px;
+  background: linear-gradient(90deg, var(--purple-primary), var(--purple-light));
+  transition: width 0.6s ease;
+}
+
+.score-row-value { width: 34px; text-align: right; font-weight: 700; color: var(--purple-primary); font-size: 14px; }
+
+.chart-container { max-width: 640px; margin: 0 auto; }
+
+.interpretation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.interpretation-card {
+  background: var(--gray-light);
+  border-radius: var(--radius-card);
+  padding: 22px;
+  transition: var(--transition-smooth);
+}
+
+.interpretation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  background: var(--white);
+}
+
+.interp-letter-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.interp-name { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+
+.interp-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+
+.interp-subheading { font-size: 12px; font-weight: 700; color: var(--purple-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; margin-top: 12px; }
+
+.interp-list { list-style: none; font-size: 13px; color: var(--text-dark); }
+.interp-list li { padding: 2px 0; }
+
+.kesimpulan-text { font-size: 14.5px; color: var(--text-dark); line-height: 1.8; }
+
+.hasil-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-bottom: 20px;
+}
+
+/* ---------- Music toggle button ---------- */
+.music-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+  color: var(--white);
+  font-size: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-soft);
+  z-index: 999;
+  transition: var(--transition-smooth);
+}
+
+.music-toggle:hover {
+  transform: scale(1.08);
+  box-shadow: var(--shadow-hover);
+}
+
+.music-toggle.muted { opacity: 0.55; }
+
+@media (max-width: 480px) {
+  .music-toggle { width: 46px; height: 46px; font-size: 18px; bottom: 16px; right: 16px; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  .app-shell { padding: 24px 14px; }
+  .card { padding: 26px 22px; }
+  .landing-title { font-size: 26px; }
+  .landing-header-bar { justify-content: center; margin-bottom: 16px; }
+  .binus-logo-small { height: 28px; }
+  .landing-footer-credit { text-align: center; margin-top: 16px; }
+  .credit-name { font-size: 11px; }
+  .credit-detail { font-size: 10px; }
+  .form-actions { flex-direction: column-reverse; }
+  .form-actions .btn { width: 100%; }
+  .answer-options { padding-left: 0; flex-wrap: wrap; }
+  .answer-option { max-width: none; }
+  .identitas-summary { grid-template-columns: 1fr; }
+  .interpretation-grid { grid-template-columns: 1fr; }
+  .score-row-label { width: 120px; font-size: 12.5px; }
+  .riasec-code { font-size: 32px; letter-spacing: 3px; padding: 12px 26px; }
+  .test-header { top: 10px; padding: 16px 18px; }
+}
+
+@media (max-width: 480px) {
+  .btn-lg { padding: 14px 24px; font-size: 15px; }
+  .question-top { gap: 10px; }
+  .question-text { font-size: 14px; }
+}
+
+/* ---------- Print styles ---------- */
+@media print {
+  body { background: var(--white) !important; }
+  .no-print, .app-shell > .page:not(#page-hasil) { display: none !important; }
+  #page-hasil { display: block !important; }
+  .card { box-shadow: none; border: 1px solid var(--gray-light); }
+  .app-shell { padding: 0; }
+}
