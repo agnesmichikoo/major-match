@@ -496,8 +496,8 @@ function handleUlangiTes() {
     title: "Ulangi Tes?",
     text: "Seluruh jawaban Anda akan dihapus dan Anda akan memulai tes dari awal.",
     showCancelButton: true,
-    confirmButtonText: "Ya, ulangi",
-    cancelButtonText: "Batal",
+    confirmButtonText: "Yes, retake",
+    cancelButtonText: "Cancel",
     confirmButtonColor: "#7C3AED",
     cancelButtonColor: "#9CA3AF"
   }).then(function (result) {
