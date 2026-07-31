@@ -103,7 +103,7 @@
           <li>Bacalah setiap pernyataan dengan saksama.</li>
           <li>Pilih <strong>"Ya"</strong> apabila pernyataan tersebut sesuai dengan diri Anda.</li>
           <li>Pilih <strong>"Tidak"</strong> apabila pernyataan tersebut tidak sesuai dengan diri Anda.</li>
-          <li>Jawablah secara jujur karena hasil tes ini hanya digunakan untuk mengetahui kecenderungan minat jurusan Anda.</li>
+          <li>Jawablah secara jujur karena hasil tes ini hanya digunakan untuk mengetahui kecenderungan minat major Anda.</li>
           <li>Terdapat 42 pernyataan yang perlu dijawab seluruhnya.</li>
         </ul>
       </div>
@@ -158,7 +158,7 @@
       </div>
 
       <div class="card">
-        <h3 class="section-title">Your Major Match</h3>
+        <h3 class="section-title">YOUR MAJOR MATCH</h3>
         <div class="riasec-code-display">
           <span id="riasec-code" class="riasec-code"></span>
         </div>
@@ -167,22 +167,42 @@
       </div>
 
       <div class="card">
-        <h3 class="section-title">Grafik Skor RIASEC</h3>
-        <div class="chart-container">
-          <canvas id="riasecChart"></canvas>
+        <h3 class="section-title">Your Interest Match</h3>
+        <p class="section-subtitle">
+          Tipe dengan skor tertinggi menunjukkan bidang yang paling match dengan minat dan potensi.<br>
+          Gunakan hasil ini sebagai panduan awal untuk mengeksplorasi jurusan dan karier yang sesuai.
+        </p>
+        <div id="interpretation-cards" class="interpretation-grid"></div>
+      </div>
+
+      <div class="card awareness-card">
+        <div class="awareness-box">
+          <span class="awareness-icon">!</span>
+          <p class="awareness-text">
+            Hasil ini merupakan gambaran awal berdasarkan tes minat.
+            Untuk mendapatkan rekomendasi yang lebih komprehensif, padukan dengan asesmen lainnya.
+          </p>
         </div>
       </div>
 
       <div class="card">
-        <h3 class="section-title">Interpretasi Hasil</h3>
-        <p class="section-subtitle">Tiga tipe dengan skor tertinggi yang paling menggambarkan minat jurusanmu.</p>
-        <div id="interpretation-cards" class="interpretation-grid"></div>
+        <h3 class="section-title">Your Match Summary</h3>
+        <div id="kesimpulan-text" class="kesimpulan-text"></div>
       </div>
 
-      <div class="card">
-        <h3 class="section-title">Kesimpulan</h3>
-        <p id="kesimpulan-text" class="kesimpulan-text"></p>
+      <div class="card promo-card">
+        <p class="promo-lead">Nggak perlu nunggu berhari-hari!</p>
+        <p class="promo-text">
+          Berkat <strong>DIGITAL PSYCHOLOGY</strong>, cukup 5 menit buat mulai kenal diri dan menemukan jurusan yang cocok.
+        </p>
+        <p class="promo-text">
+          Double degree (S.Psi. &amp; S.Kom.) bikin kamu punya kombinasi skill yang dicari di era AI, teknologi, dan industri yang serba digital.
+        </p>
       </div>
+
+      <p class="closing-tagline">
+        Masa depan butuh orang yang paham manusia dan teknologi. Kalau itu kamu, <strong>DIGITAL PSYCHOLOGY</strong> tempatnya.
+      </p>
 
     </div>
 
@@ -202,7 +222,6 @@
 </button>
 
 <!-- ================= LIBRARIES ================= -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
