@@ -70,7 +70,14 @@ const CATEGORY_INFO = {
     color: "#7C3AED",
     desc: "Kamu menyukai kegiatan praktis, menggunakan alat, mesin, atau bekerja dengan tangan. Kamu cenderung menyukai aktivitas fisik, suka bekerja di luar ruangan, serta lebih menyukai hal-hal konkret dibanding teori.",
     majors: ["Teknik Mesin", "Teknik Sipil", "Pertanian", "Teknik Otomotif", "Kehutanan"],
-    professions: ["Insinyur", "Mekanik", "Ahli Agronomi", "Pilot", "Atlet"],
+    professions: [
+      "Robotics Engineer", "Automation Engineer", "Mechatronics Engineer",
+      "IoT (Internet of Things) Specialist", "Renewable Energy Engineer",
+      "Cybersecurity Specialist", "Network Engineer", "Cloud Infrastructure Engineer",
+      "Drone Pilot / Drone Specialist", "AR/VR Developer", "Smart Manufacturing Engineer",
+      "Automotive Engineer (Electric Vehicle)", "Industrial Engineer",
+      "Field Service Engineer", "Technical Support Engineer"
+    ],
     trait: "menyukai aktivitas praktis dan bekerja dengan tangan"
   },
   I: {
@@ -333,8 +340,9 @@ function computeAndRenderResults() {
 
   const maxScore = Math.max.apply(null, sorted.map(function (s) { return s.score; })) || 1;
 
-  // --- Deteksi kasus skor seimbang (semua 6 kategori bernilai sama) ---
-  const isBalanced = sorted.every(function (s) { return s.score === sorted[0].score; });
+  // --- Deteksi kasus skor seimbang/berulang: jika skor peringkat ke-3 dan ke-4
+  //     sama besar, artinya batas "3 tipe teratas" jadi ambigu (mis. 7-7-7-7-7-6) ---
+  const isBalanced = sorted[2].score === sorted[3].score;
 
   // --- Kode RIASEC (3 huruf skor tertinggi), atau label khusus jika seimbang ---
   const code = isBalanced ? "SEIMBANG" : sorted.slice(0, 3).map(function (s) { return s.letter; }).join("");
@@ -429,7 +437,7 @@ function renderKesimpulan(top3, code, isBalanced) {
     "Bidang studi seperti " + majorsText + " dapat menjadi pilihan yang sesuai dengan karakteristik Anda.";
 
   kesimpulanEl.innerHTML =
-    "<p>" + paragraph1 + "</p><p>" + paragraph2 + "</p><p>" + paragraph3 + "</p>";
+    "<p><strong>" + paragraph1 + "</strong></p><p>" + paragraph2 + "</p><p>" + paragraph3 + "</p>";
 }
 
 /* ============================================================
@@ -449,28 +457,24 @@ function handleDownloadPDF() {
     didOpen: function () { Swal.showLoading(); }
   });
 
-  html2canvas(target, { scale: 2, backgroundColor: "#ffffff", useCORS: true }).then(function (canvas) {
-    const imgData = canvas.toDataURL("image/png");
+  // scale 1.5 sudah cukup tajam untuk dibaca & dicetak, tapi jauh lebih ringan dari scale 2
+  html2canvas(target, { scale: 1.5, backgroundColor: "#ffffff", useCORS: true }).then(function (canvas) {
+    // JPEG kualitas 0.92 jauh lebih kecil ukurannya dibanding PNG, tanpa kehilangan kualitas yang terlihat
+    const imgData = canvas.toDataURL("image/jpeg", 0.92);
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("p", "mm", "a4");
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    // Gunakan satu halaman PDF dengan ukuran yang menyesuaikan tinggi konten,
+    // sehingga tidak ada bagian yang terpotong di antara halaman.
+    const pdfWidthMM = 210; // lebar setara A4
+    const pdfHeightMM = (canvas.height * pdfWidthMM) / canvas.width;
 
-    let heightLeft = imgHeight;
-    let position = 0;
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: [pdfWidthMM, pdfHeightMM]
+    });
 
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
+    pdf.addImage(imgData, "JPEG", 0, 0, pdfWidthMM, pdfHeightMM);
 
     const fileName = "Hasil_RIASEC_MajorMatch_" + new Date().toISOString().slice(0, 10) + ".pdf";
     pdf.save(fileName);
@@ -516,10 +520,14 @@ function handleKembaliBeranda() {
 
 let audioCtx = null;
 let musicMasterGain = null;
-let musicOscillators = [];
+let musicTimeoutId = null;
 let musicPlaying = false;
 let musicMuted = false;
 let firstInteractionHandled = false;
+
+const MUSIC_VOLUME = 0.16;
+// Tangga nada pentatonis (C-D-E-G-A + oktaf) — kombinasi nada apa pun tetap terdengar tenang & tidak dissonan
+const CHIME_SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33];
 
 function getAudioContext() {
   if (!audioCtx) {
@@ -587,46 +595,65 @@ function playCompletionSound() {
   }
 }
 
-// Musik latar calming: pad lembut beberapa nada dengan modulasi volume pelan (efek "breathing")
+// Musik latar calming versi baru: wind-chime pentatonis yang lembut —
+// beda karakter dari pad drone sebelumnya. Nada dipetik satu per satu
+// dengan jeda santai & sedikit acak, seperti lonceng angin yang tenang.
 function startBackgroundMusic() {
   const ctx = getAudioContext();
   if (!ctx || musicPlaying) return;
 
   musicMasterGain = ctx.createGain();
-  musicMasterGain.gain.value = musicMuted ? 0 : 0.045;
+  musicMasterGain.gain.value = musicMuted ? 0 : MUSIC_VOLUME;
   musicMasterGain.connect(ctx.destination);
 
-  // Akor lembut: C4, E4, G4, B4 (Cmaj9-ish pad)
-  const notes = [261.63, 329.63, 392.0, 493.88];
-
-  notes.forEach(function (freq, i) {
-    const osc = ctx.createOscillator();
-    osc.type = "sine";
-    osc.frequency.value = freq;
-
-    const noteGain = ctx.createGain();
-    noteGain.gain.value = 0.7 / notes.length;
-
-    // LFO pelan untuk efek "napas" pada volume tiap nada
-    const lfo = ctx.createOscillator();
-    lfo.type = "sine";
-    lfo.frequency.value = 0.06 + i * 0.015;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.12;
-
-    lfo.connect(lfoGain);
-    lfoGain.connect(noteGain.gain);
-
-    osc.connect(noteGain);
-    noteGain.connect(musicMasterGain);
-
-    osc.start();
-    lfo.start();
-
-    musicOscillators.push(osc, lfo);
-  });
-
   musicPlaying = true;
+  scheduleNextChime();
+}
+
+function playChimeNote() {
+  const ctx = getAudioContext();
+  if (!ctx || !musicMasterGain) return;
+
+  const freq = CHIME_SCALE[Math.floor(Math.random() * CHIME_SCALE.length)];
+  const now = ctx.currentTime;
+
+  // Nada utama
+  const osc = ctx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.value = freq;
+
+  // Overtone lembut supaya terdengar seperti lonceng, bukan nada datar
+  const overtone = ctx.createOscillator();
+  overtone.type = "sine";
+  overtone.frequency.value = freq * 2.01;
+
+  const noteGain = ctx.createGain();
+  const overtoneGain = ctx.createGain();
+
+  noteGain.gain.setValueAtTime(0.0001, now);
+  noteGain.gain.exponentialRampToValueAtTime(0.5, now + 0.06);
+  noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
+
+  overtoneGain.gain.setValueAtTime(0.0001, now);
+  overtoneGain.gain.exponentialRampToValueAtTime(0.1, now + 0.06);
+  overtoneGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+
+  osc.connect(noteGain);
+  overtone.connect(overtoneGain);
+  noteGain.connect(musicMasterGain);
+  overtoneGain.connect(musicMasterGain);
+
+  osc.start(now);
+  overtone.start(now);
+  osc.stop(now + 3.3);
+  overtone.stop(now + 2.3);
+}
+
+function scheduleNextChime() {
+  if (!musicPlaying) return;
+  playChimeNote();
+  const nextDelay = 1800 + Math.random() * 1800; // 1.8–3.6 detik, santai & tidak monoton
+  musicTimeoutId = setTimeout(scheduleNextChime, nextDelay);
 }
 
 function setMusicIcon() {
@@ -646,7 +673,7 @@ function toggleMusic() {
   }
   const ctx = getAudioContext();
   if (musicMasterGain && ctx) {
-    musicMasterGain.gain.linearRampToValueAtTime(musicMuted ? 0 : 0.045, ctx.currentTime + 0.4);
+    musicMasterGain.gain.linearRampToValueAtTime(musicMuted ? 0 : MUSIC_VOLUME, ctx.currentTime + 0.4);
   }
   setMusicIcon();
 }
