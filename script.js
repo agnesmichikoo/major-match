@@ -372,17 +372,7 @@ function computeAndRenderResults() {
 function renderInterpretationCards(top3, isBalanced) {
   const container = document.getElementById("interpretation-cards");
 
-  if (isBalanced) {
-    container.innerHTML =
-      '<div class="balanced-message">' +
-        '<p>Kamu memiliki minat yang seimbang pada beberapa bidang.</p>' +
-        '<p>Artinya, kamu nyaman mempelajari berbagai jenis aktivitas, mulai dari praktik langsung, analisis, kreativitas, hingga bekerja sama dengan orang lain.</p>' +
-        '<p>Hasil ini menunjukkan bahwa kamu memiliki banyak pilihan jurusan dan karier untuk dieksplorasi.</p>' +
-      '</div>';
-    return;
-  }
-
-  container.innerHTML = top3.map(function (s) {
+  const cardsHtml = top3.map(function (s) {
     const info = CATEGORY_INFO[s.letter];
     return (
       '<div class="interpretation-card">' +
@@ -396,18 +386,22 @@ function renderInterpretationCards(top3, isBalanced) {
       '</div>'
     );
   }).join("");
+
+  const balancedNoteHtml = isBalanced
+    ? '<div class="balanced-message">' +
+        '<p>Kamu memiliki minat yang seimbang pada beberapa bidang.</p>' +
+        '<p>Artinya, kamu nyaman mempelajari berbagai jenis aktivitas, mulai dari praktik langsung, analisis, kreativitas, hingga bekerja sama dengan orang lain.</p>' +
+        '<p>Hasil ini menunjukkan bahwa kamu memiliki banyak pilihan jurusan dan karier untuk dieksplorasi.</p>' +
+      '</div>'
+    : '';
+
+  // Kartu Recommended Majors & Career Opportunities tetap selalu tampil;
+  // catatan skor seimbang (jika ada) ditambahkan sebagai info tambahan, bukan pengganti.
+  container.innerHTML = balancedNoteHtml + cardsHtml;
 }
 
 function renderKesimpulan(top3, code, isBalanced) {
   const kesimpulanEl = document.getElementById("kesimpulan-text");
-
-  if (isBalanced) {
-    kesimpulanEl.innerHTML =
-      '<p>Kamu memiliki minat yang seimbang pada beberapa bidang.</p>' +
-      '<p>Artinya, kamu nyaman mempelajari berbagai jenis aktivitas, mulai dari praktik langsung, analisis, kreativitas, hingga bekerja sama dengan orang lain.</p>' +
-      '<p>Hasil ini menunjukkan bahwa kamu memiliki banyak pilihan jurusan dan karier untuk dieksplorasi.</p>';
-    return;
-  }
 
   const names = top3.map(function (s) { return CATEGORY_INFO[s.letter].name; });
   const traits = top3.map(function (s) { return CATEGORY_INFO[s.letter].trait; });
@@ -436,8 +430,15 @@ function renderKesimpulan(top3, code, isBalanced) {
   const paragraph3 =
     "Bidang studi seperti " + majorsText + " dapat menjadi pilihan yang sesuai dengan karakteristik Anda.";
 
-  kesimpulanEl.innerHTML =
+  let summaryHtml =
     "<p><strong>" + paragraph1 + "</strong></p><p>" + paragraph2 + "</p><p>" + paragraph3 + "</p>";
+
+  if (isBalanced) {
+    summaryHtml +=
+      "<p>Kamu memiliki minat yang seimbang pada beberapa bidang. Artinya, kamu nyaman mempelajari berbagai jenis aktivitas, mulai dari praktik langsung, analisis, kreativitas, hingga bekerja sama dengan orang lain. Hasil ini menunjukkan bahwa kamu memiliki banyak pilihan jurusan dan karier untuk dieksplorasi.</p>";
+  }
+
+  kesimpulanEl.innerHTML = summaryHtml;
 }
 
 /* ============================================================
@@ -610,6 +611,9 @@ function startBackgroundMusic() {
   scheduleNextChime();
 }
 
+// Nada bergaya piano: beberapa harmonik (nada dasar + overtone) dengan
+// serangan cepat (seperti palu piano memukul senar) dan peluruhan bertahap —
+// harmonik lebih tinggi meluruh lebih cepat, mirip karakter piano asli.
 function playChimeNote() {
   const ctx = getAudioContext();
   if (!ctx || !musicMasterGain) return;
@@ -617,36 +621,34 @@ function playChimeNote() {
   const freq = CHIME_SCALE[Math.floor(Math.random() * CHIME_SCALE.length)];
   const now = ctx.currentTime;
 
-  // Nada utama
-  const osc = ctx.createOscillator();
-  osc.type = "sine";
-  osc.frequency.value = freq;
+  const noteBus = ctx.createGain();
+  noteBus.gain.value = 0.42;
+  noteBus.connect(musicMasterGain);
 
-  // Overtone lembut supaya terdengar seperti lonceng, bukan nada datar
-  const overtone = ctx.createOscillator();
-  overtone.type = "sine";
-  overtone.frequency.value = freq * 2.01;
+  // { pengali frekuensi, volume relatif, lama peluruhan (detik) }
+  const harmonics = [
+    { mult: 1, amp: 1.0, decay: 3.6 },
+    { mult: 2, amp: 0.5, decay: 2.6 },
+    { mult: 3, amp: 0.26, decay: 1.9 },
+    { mult: 4, amp: 0.15, decay: 1.3 },
+    { mult: 5, amp: 0.08, decay: 0.9 }
+  ];
 
-  const noteGain = ctx.createGain();
-  const overtoneGain = ctx.createGain();
+  harmonics.forEach(function (h) {
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.value = freq * h.mult;
 
-  noteGain.gain.setValueAtTime(0.0001, now);
-  noteGain.gain.exponentialRampToValueAtTime(0.5, now + 0.06);
-  noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(h.amp, now + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + h.decay);
 
-  overtoneGain.gain.setValueAtTime(0.0001, now);
-  overtoneGain.gain.exponentialRampToValueAtTime(0.1, now + 0.06);
-  overtoneGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
-
-  osc.connect(noteGain);
-  overtone.connect(overtoneGain);
-  noteGain.connect(musicMasterGain);
-  overtoneGain.connect(musicMasterGain);
-
-  osc.start(now);
-  overtone.start(now);
-  osc.stop(now + 3.3);
-  overtone.stop(now + 2.3);
+    osc.connect(g);
+    g.connect(noteBus);
+    osc.start(now);
+    osc.stop(now + h.decay + 0.1);
+  });
 }
 
 function scheduleNextChime() {
