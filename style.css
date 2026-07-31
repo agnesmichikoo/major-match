@@ -180,7 +180,7 @@ input { font-family: inherit; }
 }
 
 .binus-logo-small {
-  height: 34px;
+  height: 56px;
   width: auto;
 }
 
@@ -710,7 +710,7 @@ input { font-family: inherit; }
   .card { padding: 26px 22px; }
   .landing-title { font-size: 26px; }
   .landing-header-bar { justify-content: center; margin-bottom: 16px; }
-  .binus-logo-small { height: 28px; }
+  .binus-logo-small { height: 44px; }
   .landing-footer-credit { text-align: center; margin-top: 16px; }
   .credit-name { font-size: 11px; }
   .credit-detail { font-size: 10px; }
