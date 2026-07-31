@@ -122,7 +122,7 @@ const STORAGE_KEY = "myCareerCampus_riasecData";
    ============================================================ */
 
 let state = {
-  identitas: { nama: "", nis: "", sekolah: "", kelas: "" },
+  identitas: { nama: "", sekolah: "", kelas: "" },
   answers: {}      // { "1": "ya", "2": "tidak", ... }
 };
 
@@ -156,7 +156,7 @@ function loadStateFromStorage() {
 
 function clearStateStorage() {
   localStorage.removeItem(STORAGE_KEY);
-  state = { identitas: { nama: "", nis: "", sekolah: "", kelas: "" }, answers: {} };
+  state = { identitas: { nama: "", sekolah: "", kelas: "" }, answers: {} };
 }
 
 /* ============================================================
@@ -180,7 +180,6 @@ function showPage(pageId) {
 
 function prefillIdentitasForm() {
   document.getElementById("input-nama").value = state.identitas.nama || "";
-  document.getElementById("input-nis").value = state.identitas.nis || "";
   document.getElementById("input-sekolah").value = state.identitas.sekolah || "";
   document.getElementById("input-kelas").value = state.identitas.kelas || "";
 }
@@ -189,11 +188,10 @@ function handleIdentitasSubmit(e) {
   e.preventDefault();
 
   const nama = document.getElementById("input-nama");
-  const nis = document.getElementById("input-nis");
   const sekolah = document.getElementById("input-sekolah");
   const kelas = document.getElementById("input-kelas");
 
-  const fields = [nama, nis, sekolah, kelas];
+  const fields = [nama, sekolah, kelas];
   let hasEmpty = false;
 
   fields.forEach(function (field) {
@@ -217,7 +215,6 @@ function handleIdentitasSubmit(e) {
 
   state.identitas = {
     nama: nama.value.trim(),
-    nis: nis.value.trim(),
     sekolah: sekolah.value.trim(),
     kelas: kelas.value.trim()
   };
@@ -352,7 +349,6 @@ function computeScores() {
 function computeAndRenderResults() {
   // --- Identitas ---
   document.getElementById("hasil-nama").textContent = state.identitas.nama;
-  document.getElementById("hasil-nis").textContent = state.identitas.nis;
   document.getElementById("hasil-sekolah").textContent = state.identitas.sekolah;
   document.getElementById("hasil-kelas").textContent = state.identitas.kelas;
 
