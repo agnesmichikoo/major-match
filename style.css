@@ -509,13 +509,28 @@ input { font-family: inherit; }
 
 .score-row-value { width: 34px; text-align: right; font-weight: 700; color: var(--purple-primary); font-size: 14px; }
 
-.chart-container { max-width: 640px; margin: 0 auto; }
-
 .interpretation-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
+
+.balanced-message {
+  grid-column: 1 / -1;
+  background: var(--lavender);
+  border-radius: var(--radius-card);
+  padding: 26px;
+  text-align: center;
+}
+
+.balanced-message p {
+  font-size: 14.5px;
+  color: var(--text-dark);
+  line-height: 1.8;
+  margin-bottom: 10px;
+}
+
+.balanced-message p:last-child { margin-bottom: 0; }
 
 .interpretation-card {
   background: var(--gray-light);
@@ -553,7 +568,75 @@ input { font-family: inherit; }
 .interp-list { list-style: none; font-size: 13px; color: var(--text-dark); }
 .interp-list li { padding: 2px 0; }
 
-.kesimpulan-text { font-size: 14.5px; color: var(--text-dark); line-height: 1.8; }
+.kesimpulan-text p { font-size: 14.5px; color: var(--text-dark); line-height: 1.8; margin-bottom: 14px; }
+.kesimpulan-text p:last-child { margin-bottom: 0; }
+
+/* ---------- Awareness notice box ---------- */
+.awareness-card { padding: 24px 28px; }
+
+.awareness-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #FEF3E2;
+  border: 1px solid #FBD9A5;
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+}
+
+.awareness-icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #F59E0B;
+  color: var(--white);
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.awareness-text {
+  font-size: 13.5px;
+  color: #92400E;
+  line-height: 1.7;
+}
+
+/* ---------- Digital Psychology promo card ---------- */
+.promo-card {
+  background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+  color: var(--white);
+}
+
+.promo-lead {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.promo-text {
+  font-size: 14px;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.94);
+  margin-bottom: 10px;
+}
+
+.promo-text:last-child { margin-bottom: 0; }
+
+/* ---------- Closing tagline ---------- */
+.closing-tagline {
+  text-align: center;
+  font-size: 15.5px;
+  color: var(--text-dark);
+  line-height: 1.7;
+  max-width: 640px;
+  margin: 6px auto 20px;
+  padding: 0 12px;
+}
+
+.closing-tagline strong { color: var(--purple-primary); }
 
 .hasil-actions {
   display: flex;
