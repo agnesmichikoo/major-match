@@ -638,6 +638,33 @@ input { font-family: inherit; }
 
 .closing-tagline strong { color: var(--purple-primary); }
 
+/* ---------- Social footer (Instagram) ---------- */
+.social-footer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin: 8px auto 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-light);
+}
+
+.social-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.instagram-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--purple-primary);
+  flex-shrink: 0;
+}
+
 .hasil-actions {
   display: flex;
   flex-wrap: wrap;
