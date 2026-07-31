@@ -526,18 +526,13 @@ let musicPlaying = false;
 let musicMuted = false;
 let firstInteractionHandled = false;
 
-const MUSIC_VOLUME = 0.11;
+const MUSIC_VOLUME = 0.13;
 
-// Progresi akor lembut (Cmaj9 - Am7 - Fmaj7 - Gsus4) — semua interval konsonan,
-// tidak ada nada yang saling "bentrok", jadi terdengar tenang & instrumental.
-const CHORDS = [
-  [261.63, 329.63, 392.0, 493.88],  // C4 - E4 - G4 - B4 (Cmaj9)
-  [220.0, 261.63, 329.63, 392.0],   // A3 - C4 - E4 - G4 (Am7)
-  [174.61, 220.0, 261.63, 329.63],  // F3 - A3 - C4 - E4 (Fmaj7)
-  [196.0, 261.63, 293.66, 392.0]    // G3 - C4 - D4 - G4 (Gsus4)
-];
-let chordIndex = 0;
-const CHORD_DURATION = 9; // detik tiap akor "mengambang" sebelum berpindah
+// Melodi ceria berulang (C major) bergaya xylophone/marimba —
+// cocok buat suasana tes minat bakat yang ringan & positif, bukan drone yang bikin serem.
+const MELODY = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.0, 783.99, 659.25, 523.25, 587.33, 659.25];
+let melodyIndex = 0;
+const NOTE_INTERVAL = 0.38; // detik antar nada — bikin terasa riang & berirama
 
 function getAudioContext() {
   if (!audioCtx) {
@@ -605,11 +600,9 @@ function playCompletionSound() {
   }
 }
 
-// Musik latar calming versi baru: ambient pad instrumental yang lembut.
-// Alih-alih memetik satu nada acak, sekarang akor lengkap (3-4 nada) muncul
-// bersamaan lalu memudar perlahan (fade in ~2.5 detik, bertahan, fade out ~3 detik)
-// sebelum berpindah ke akor berikutnya secara halus — hasilnya terdengar
-// seperti musik instrumental yang mengalir tenang, bukan petikan nada tunggal.
+// Musik latar versi ceria: melodi pendek yang berulang dengan nada "pluck"
+// gaya xylophone/marimba — ritmis dan positif, cocok buat suasana tes minat
+// bakat yang fun, bukan drone panjang yang justru terkesan menyeramkan.
 function startBackgroundMusic() {
   const ctx = getAudioContext();
   if (!ctx || musicPlaying) return;
@@ -626,38 +619,47 @@ function playChimeNote() {
   const ctx = getAudioContext();
   if (!ctx || !musicMasterGain) return;
 
-  const chordFreqs = CHORDS[chordIndex % CHORDS.length];
-  chordIndex++;
+  const freq = MELODY[melodyIndex % MELODY.length];
+  melodyIndex++;
 
   const now = ctx.currentTime;
-  const attack = 2.5;
-  const release = 3;
-  const sustainLevel = 0.5 / chordFreqs.length;
+  const decay = 0.42;
 
-  chordFreqs.forEach(function (freq) {
-    const osc = ctx.createOscillator();
-    osc.type = "triangle";
-    osc.frequency.value = freq;
+  // Nada utama — pluck ceria & singkat (triangle wave lebih cerah dari sine)
+  const osc = ctx.createOscillator();
+  osc.type = "triangle";
+  osc.frequency.value = freq;
 
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(sustainLevel, now + attack);
-    g.gain.setValueAtTime(sustainLevel, now + CHORD_DURATION - release);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + CHORD_DURATION);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(0.45, now + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + decay);
 
-    osc.connect(g);
-    g.connect(musicMasterGain);
-    osc.start(now);
-    osc.stop(now + CHORD_DURATION + 0.2);
-  });
+  osc.connect(g);
+  g.connect(musicMasterGain);
+  osc.start(now);
+  osc.stop(now + decay + 0.05);
+
+  // Overtone oktaf lembut untuk kilauan/shimmer khas xylophone
+  const overtone = ctx.createOscillator();
+  overtone.type = "sine";
+  overtone.frequency.value = freq * 2;
+
+  const og = ctx.createGain();
+  og.gain.setValueAtTime(0.0001, now);
+  og.gain.exponentialRampToValueAtTime(0.14, now + 0.006);
+  og.gain.exponentialRampToValueAtTime(0.0001, now + decay * 0.7);
+
+  overtone.connect(og);
+  og.connect(musicMasterGain);
+  overtone.start(now);
+  overtone.stop(now + decay + 0.05);
 }
 
 function scheduleNextChime() {
   if (!musicPlaying) return;
   playChimeNote();
-  // Akor berikutnya mulai sedikit lebih awal dari akor sebelumnya selesai,
-  // supaya transisinya menyatu (crossfade), tidak ada jeda hening.
-  musicTimeoutId = setTimeout(scheduleNextChime, (CHORD_DURATION - 2.5) * 1000);
+  musicTimeoutId = setTimeout(scheduleNextChime, NOTE_INTERVAL * 1000);
 }
 
 function setMusicIcon() {
