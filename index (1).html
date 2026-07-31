@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Career Campus | Tes Minat Karier RIASEC</title>
+
+<!-- Google Fonts: Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- SweetAlert2 (validasi & notifikasi) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============================================================
+       HALAMAN 1 — LANDING PAGE
+  ============================================================= -->
+  <section id="page-landing" class="page active">
+    <div class="landing-card card">
+
+      <div class="brand-badge">
+        <svg class="brand-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" stroke="#7C3AED" stroke-width="2.5" opacity="0.25"/>
+          <circle cx="32" cy="32" r="21" stroke="#7C3AED" stroke-width="2.5" opacity="0.45"/>
+          <path d="M32 15L38 28L32 25L26 28L32 15Z" fill="#7C3AED"/>
+          <path d="M32 49L26 36L32 39L38 36L32 49Z" fill="#A78BFA"/>
+          <circle cx="32" cy="32" r="4.5" fill="#7C3AED"/>
+        </svg>
+      </div>
+
+      <p class="eyebrow">My Career Campus</p>
+      <h1 class="landing-title">Temukan Arah Kariermu</h1>
+      <p class="tagline">Jurusan yang kamu pilih menentukan masa depanmu</p>
+
+      <p class="landing-desc">
+        Tes ini digunakan untuk mengetahui kecenderungan minat karier berdasarkan teori
+        John Holland (RIASEC). Bacalah setiap pernyataan dengan saksama dan jawablah sesuai
+        dengan kondisi diri Anda. Tidak ada jawaban benar maupun salah — jawaban yang jujur
+        akan membantu memberikan gambaran mengenai minat karier yang paling sesuai dengan diri Anda.
+      </p>
+
+      <div class="landing-illustration" aria-hidden="true">
+        <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- compass / cap illustration representing career direction -->
+          <ellipse cx="160" cy="178" rx="120" ry="12" fill="#EDE9FE"/>
+          <circle cx="160" cy="95" r="70" fill="#F3F4F6" stroke="#A78BFA" stroke-width="3"/>
+          <circle cx="160" cy="95" r="52" fill="#FFFFFF" stroke="#EDE9FE" stroke-width="2"/>
+          <path d="M160 95 L184 60 L168 100 L160 95Z" fill="#7C3AED"/>
+          <path d="M160 95 L136 130 L152 90 L160 95Z" fill="#A78BFA"/>
+          <circle cx="160" cy="95" r="6" fill="#7C3AED"/>
+          <text x="160" y="52" text-anchor="middle" font-size="10" fill="#7C3AED" font-family="Poppins, sans-serif" font-weight="600">N</text>
+          <text x="160" y="146" text-anchor="middle" font-size="10" fill="#A78BFA" font-family="Poppins, sans-serif" font-weight="600">S</text>
+          <!-- graduation cap -->
+          <g transform="translate(230,120)">
+            <polygon points="0,0 34,10 0,20 -34,10" fill="#7C3AED"/>
+            <rect x="-6" y="10" width="12" height="18" rx="3" fill="#A78BFA"/>
+            <line x1="20" y1="7" x2="20" y2="26" stroke="#7C3AED" stroke-width="2"/>
+            <circle cx="20" cy="28" r="2.5" fill="#7C3AED"/>
+          </g>
+          <!-- book -->
+          <g transform="translate(48,118)">
+            <path d="M0,0 Q14,-8 28,0 L28,22 Q14,14 0,22 Z" fill="#A78BFA"/>
+            <path d="M28,0 Q42,-8 56,0 L56,22 Q42,14 28,22 Z" fill="#7C3AED"/>
+          </g>
+        </svg>
+      </div>
+
+      <button id="btn-mulai" class="btn btn-primary btn-lg">Mulai Tes</button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       HALAMAN 2 — IDENTITAS PESERTA
+  ============================================================= -->
+  <section id="page-identitas" class="page">
+    <div class="card form-card">
+      <p class="eyebrow">Langkah 1 dari 3</p>
+      <h2 class="page-title">Identitas Peserta</h2>
+      <p class="page-subtitle">Lengkapi data diri Anda sebelum memulai tes.</p>
+
+      <form id="form-identitas" novalidate>
+        <div class="form-group">
+          <label for="input-nama">Nama Lengkap</label>
+          <input type="text" id="input-nama" name="nama" placeholder="Masukkan nama lengkap" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="input-nis">NIS / NIM</label>
+          <input type="text" id="input-nis" name="nis" placeholder="Masukkan NIS / NIM" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="input-sekolah">Asal Sekolah</label>
+          <input type="text" id="input-sekolah" name="sekolah" placeholder="Masukkan asal sekolah" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="input-kelas">Kelas</label>
+          <input type="text" id="input-kelas" name="kelas" placeholder="Contoh: XI IPA 2" autocomplete="off">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="btn-kembali-1" class="btn btn-ghost">Kembali</button>
+          <button type="submit" id="btn-lanjutkan" class="btn btn-primary">Lanjutkan</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       HALAMAN 3 — PETUNJUK PENGERJAAN
+  ============================================================= -->
+  <section id="page-petunjuk" class="page">
+    <div class="card">
+      <p class="eyebrow">Langkah 2 dari 3</p>
+      <h2 class="page-title">Petunjuk Pengerjaan</h2>
+
+      <div class="petunjuk-box">
+        <ul class="petunjuk-list">
+          <li>Bacalah setiap pernyataan dengan saksama.</li>
+          <li>Pilih <strong>"Ya"</strong> apabila pernyataan tersebut sesuai dengan diri Anda.</li>
+          <li>Pilih <strong>"Tidak"</strong> apabila pernyataan tersebut tidak sesuai dengan diri Anda.</li>
+          <li>Jawablah secara jujur karena hasil tes ini hanya digunakan untuk mengetahui kecenderungan minat karier Anda.</li>
+          <li>Terdapat 42 pernyataan yang perlu dijawab seluruhnya.</li>
+        </ul>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" id="btn-kembali-2" class="btn btn-ghost">Kembali</button>
+        <button type="button" id="btn-mulai-tes" class="btn btn-primary">Mulai Tes</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       HALAMAN 4 — TES RIASEC (42 PERTANYAAN)
+  ============================================================= -->
+  <section id="page-test" class="page">
+    <div class="test-wrapper">
+
+      <div class="test-header card">
+        <div class="test-header-top">
+          <span class="test-header-label">My Career Campus</span>
+          <span id="progress-count" class="progress-count">0 / 42 Pertanyaan</span>
+        </div>
+        <div class="progress-bar-track">
+          <div id="progress-bar-fill" class="progress-bar-fill" style="width:0%"></div>
+        </div>
+        <span id="progress-percent" class="progress-percent">0%</span>
+      </div>
+
+      <div id="questions-container" class="questions-container">
+        <!-- Pertanyaan di-render secara dinamis oleh script.js -->
+      </div>
+
+      <div class="test-footer card">
+        <button type="button" id="btn-lihat-hasil" class="btn btn-primary btn-lg btn-block">Lihat Hasil</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       HALAMAN 5 — HASIL TES
+  ============================================================= -->
+  <section id="page-hasil" class="page">
+    <div id="hasil-print-area" class="hasil-wrapper">
+
+      <div class="card hasil-header-card">
+        <p class="eyebrow">My Career Campus</p>
+        <h2 class="page-title">Hasil Tes Minat Karier RIASEC</h2>
+        <p class="hasil-intro">
+          Terima kasih telah mengikuti RIASEC Career Interest Test. Berikut merupakan hasil
+          kecenderungan minat karier Anda berdasarkan teori John Holland.
+        </p>
+
+        <div class="identitas-summary">
+          <div><span class="id-label">Nama</span><span id="hasil-nama" class="id-value"></span></div>
+          <div><span class="id-label">NIS / NIM</span><span id="hasil-nis" class="id-value"></span></div>
+          <div><span class="id-label">Asal Sekolah</span><span id="hasil-sekolah" class="id-value"></span></div>
+          <div><span class="id-label">Kelas</span><span id="hasil-kelas" class="id-value"></span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">Kode RIASEC Anda</h3>
+        <div class="riasec-code-display">
+          <span id="riasec-code" class="riasec-code"></span>
+        </div>
+
+        <div id="score-list" class="score-list"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">Grafik Skor RIASEC</h3>
+        <div class="chart-container">
+          <canvas id="riasecChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">Interpretasi Hasil</h3>
+        <p class="section-subtitle">Tiga tipe dengan skor tertinggi yang paling menggambarkan minat kariermu.</p>
+        <div id="interpretation-cards" class="interpretation-grid"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">Kesimpulan</h3>
+        <p id="kesimpulan-text" class="kesimpulan-text"></p>
+      </div>
+
+    </div>
+
+    <div class="hasil-actions no-print">
+      <button type="button" id="btn-cetak" class="btn btn-secondary">Cetak Hasil</button>
+      <button type="button" id="btn-download-pdf" class="btn btn-secondary">Download PDF</button>
+      <button type="button" id="btn-ulangi" class="btn btn-ghost">Ulangi Tes</button>
+      <button type="button" id="btn-beranda" class="btn btn-ghost">Kembali ke Beranda</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- ================= LIBRARIES ================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="script.js"></script>
+</body>
+</html>
