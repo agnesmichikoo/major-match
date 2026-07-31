@@ -620,35 +620,32 @@ function playChimeNote() {
 
   const freq = CHIME_SCALE[Math.floor(Math.random() * CHIME_SCALE.length)];
   const now = ctx.currentTime;
+  const decay = 2.6;
 
   const noteBus = ctx.createGain();
-  noteBus.gain.value = 0.42;
+  noteBus.gain.setValueAtTime(0.0001, now);
+  noteBus.gain.exponentialRampToValueAtTime(0.5, now + 0.015);
+  noteBus.gain.exponentialRampToValueAtTime(0.0001, now + decay);
   noteBus.connect(musicMasterGain);
 
-  // { pengali frekuensi, volume relatif, lama peluruhan (detik) }
-  const harmonics = [
-    { mult: 1, amp: 1.0, decay: 3.6 },
-    { mult: 2, amp: 0.5, decay: 2.6 },
-    { mult: 3, amp: 0.26, decay: 1.9 },
-    { mult: 4, amp: 0.15, decay: 1.3 },
-    { mult: 5, amp: 0.08, decay: 0.9 }
-  ];
+  // Nada dasar (triangle wave sudah punya karakter hangat mirip piano tanpa perlu banyak osilator)
+  const osc = ctx.createOscillator();
+  osc.type = "triangle";
+  osc.frequency.value = freq;
+  osc.connect(noteBus);
+  osc.start(now);
+  osc.stop(now + decay + 0.1);
 
-  harmonics.forEach(function (h) {
-    const osc = ctx.createOscillator();
-    osc.type = "sine";
-    osc.frequency.value = freq * h.mult;
-
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(h.amp, now + 0.006);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + h.decay);
-
-    osc.connect(g);
-    g.connect(noteBus);
-    osc.start(now);
-    osc.stop(now + h.decay + 0.1);
-  });
+  // Satu overtone oktaf lembut untuk menambah kehangatan, volume tetap & sinkron dengan noteBus
+  const overtone = ctx.createOscillator();
+  overtone.type = "sine";
+  overtone.frequency.value = freq * 2;
+  const overtoneGain = ctx.createGain();
+  overtoneGain.gain.value = 0.18;
+  overtone.connect(overtoneGain);
+  overtoneGain.connect(noteBus);
+  overtone.start(now);
+  overtone.stop(now + decay + 0.1);
 }
 
 function scheduleNextChime() {
