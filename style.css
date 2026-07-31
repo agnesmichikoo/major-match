@@ -139,6 +139,38 @@ input { font-family: inherit; }
   text-align: center;
 }
 
+.landing-topbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
+.landing-credit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.binus-logo {
+  height: 42px;
+  width: auto;
+}
+
+.credit-text { text-align: left; }
+
+.credit-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.3;
+}
+
+.credit-detail {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
 .brand-badge {
   display: flex;
   justify-content: center;
@@ -521,6 +553,10 @@ input { font-family: inherit; }
   .app-shell { padding: 24px 14px; }
   .card { padding: 26px 22px; }
   .landing-title { font-size: 26px; }
+  .landing-topbar { justify-content: center; margin-bottom: 14px; }
+  .binus-logo { height: 32px; }
+  .credit-name { font-size: 10.5px; }
+  .credit-detail { font-size: 9px; }
   .form-actions { flex-direction: column-reverse; }
   .form-actions .btn { width: 100%; }
   .answer-options { padding-left: 0; flex-wrap: wrap; }
