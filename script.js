@@ -157,6 +157,7 @@ const STORAGE_KEY = "myCareerCampus_riasecData";
    ============================================================ */
 
 let state = {
+  nama: "",
   answers: {}      // { "1": "ya", "2": "tidak", ... }
 };
 
@@ -189,7 +190,7 @@ function loadStateFromStorage() {
 
 function clearStateStorage() {
   localStorage.removeItem(STORAGE_KEY);
-  state = { answers: {} };
+  state = { nama: "", answers: {} };
 }
 
 /* ============================================================
@@ -332,6 +333,9 @@ function computeScores() {
 }
 
 function computeAndRenderResults() {
+  // --- Tampilkan nama peserta ---
+  document.getElementById("hasil-nama").textContent = state.nama || "-";
+
   // --- Skor & urutan ---
   const scores = computeScores();
   const sorted = Object.keys(scores)
@@ -477,7 +481,8 @@ function handleDownloadPDF() {
 
     pdf.addImage(imgData, "JPEG", 0, 0, pdfWidthMM, pdfHeightMM);
 
-    const fileName = "Hasil_RIASEC_MajorMatch_" + new Date().toISOString().slice(0, 10) + ".pdf";
+    const safeName = (state.nama || "Peserta").trim().replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, "_");
+    const fileName = "Hasil_RIASEC_MajorMatch_" + safeName + ".pdf";
     pdf.save(fileName);
     Swal.close();
   }).catch(function (err) {
@@ -504,12 +509,23 @@ function handleUlangiTes() {
   }).then(function (result) {
     if (result.isConfirmed) {
       clearStateStorage();
+      const namaInput = document.getElementById("input-nama-landing");
+      if (namaInput) {
+        namaInput.value = "";
+        namaInput.classList.remove("input-error");
+      }
       showPage("page-landing");
     }
   });
 }
 
 function handleKembaliBeranda() {
+  clearStateStorage();
+  const namaInput = document.getElementById("input-nama-landing");
+  if (namaInput) {
+    namaInput.value = "";
+    namaInput.classList.remove("input-error");
+  }
   showPage("page-landing");
 }
 
@@ -684,16 +700,16 @@ function toggleMusic() {
   setMusicIcon();
 }
 
-// Browser modern memblokir audio otomatis sebelum ada interaksi pengguna,
-// jadi musik latar baru dimulai begitu pengguna melakukan klik pertama.
+// Musik latar sekarang OFF secara default (opt-in), supaya tidak ada suara
+// mengejutkan yang muncul otomatis saat pengguna mau mulai tes — ini bisa
+// bikin cemas/anxious. Musik hanya menyala kalau pengguna sengaja menekan
+// tombol speaker.
 function handleFirstInteraction() {
   if (firstInteractionHandled) return;
   firstInteractionHandled = true;
+  // Sengaja tidak memanggil startBackgroundMusic() di sini.
+  // AudioContext tetap disiapkan agar tombol musik langsung responsif saat ditekan.
   getAudioContext();
-  if (!musicMuted) {
-    startBackgroundMusic();
-  }
-  setMusicIcon();
 }
 
 /* ============================================================
@@ -701,7 +717,10 @@ function handleFirstInteraction() {
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", function () {
-  loadStateFromStorage();
+  // Setiap kali halaman dibuka/direfresh, jawaban selalu dimulai dari nol —
+  // penting supaya orang berikutnya yang mengerjakan tidak melihat jawaban
+  // sisa dari pengisi sebelumnya (misalnya saat dipakai bergantian banyak orang).
+  clearStateStorage();
   renderQuestions();
 
   // Bunyi klik untuk semua tombol & opsi jawaban di seluruh halaman
@@ -712,6 +731,23 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.getElementById("btn-mulai").addEventListener("click", function () {
+    const namaInput = document.getElementById("input-nama-landing");
+    const namaValue = namaInput.value.trim();
+
+    if (!namaValue) {
+      namaInput.classList.add("input-error");
+      Swal.fire({
+        icon: "warning",
+        title: "Nama belum diisi",
+        text: "Mohon tulis nama lengkapmu terlebih dahulu sebelum memulai.",
+        confirmButtonColor: "#7C3AED"
+      });
+      return;
+    }
+
+    namaInput.classList.remove("input-error");
+    state.nama = namaValue;
+    saveStateToStorage();
     showPage("page-petunjuk");
   });
 
