@@ -210,6 +210,52 @@ input { font-family: inherit; }
 
 .brand-icon { width: 56px; height: 56px; }
 
+.landing-name-group {
+  text-align: left;
+  max-width: 420px;
+  margin: 0 auto 22px;
+}
+
+.landing-name-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+.landing-name-group input {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-light);
+  background: var(--gray-light);
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  color: var(--text-dark);
+  transition: var(--transition-smooth);
+}
+
+.landing-name-group input:focus {
+  outline: none;
+  border-color: var(--purple-primary);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+}
+
+.landing-name-group input.input-error {
+  border-color: #EF4444;
+  background: #FEF2F2;
+}
+
+.hasil-nama-display {
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.hasil-nama-display strong { color: var(--purple-primary); }
+
 .landing-illustration {
   max-width: 340px;
   margin: 0 auto 30px;
