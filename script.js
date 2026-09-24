@@ -541,14 +541,22 @@ let musicTimeoutId = null;
 let musicPlaying = false;
 let musicMuted = false;
 let firstInteractionHandled = false;
+let noiseSource = null;
+let noiseGainNode = null;
 
-const MUSIC_VOLUME = 0.13;
+const MUSIC_VOLUME = 0.16;
+const NOISE_VOLUME = 0.02; // tekstur vinyl/hiss sangat pelan, cuma nuansa
 
-// Melodi pentatonis mayor (C-D-E-G-A) yang hangat & positif tanpa lompatan
-// oktaf besar — lebih tenang dari versi sebelumnya, tapi tetap terasa ringan.
-const MELODY = [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 440.0];
-let melodyIndex = 0;
-const NOTE_INTERVAL = 0.62; // detik antar nada — lebih santai, tidak terburu-buru
+// Progresi akor jazzy ii-V-I-vi (Dm7 - G7 - Cmaj7 - Am7) khas lo-fi,
+// register agak rendah supaya terasa hangat & "muffled".
+const CHORDS = [
+  [146.83, 174.61, 220.0, 261.63],  // Dm7
+  [196.0, 246.94, 293.66, 349.23],  // G7
+  [130.81, 164.81, 196.0, 246.94],  // Cmaj7
+  [110.0, 130.81, 164.81, 196.0]    // Am7
+];
+let chordIndex = 0;
+const CHORD_DURATION = 11; // detik tiap akor bertahan sebelum berpindah
 
 function getAudioContext() {
   if (!audioCtx) {
@@ -616,9 +624,9 @@ function playCompletionSound() {
   }
 }
 
-// Musik latar versi ceria: melodi pendek yang berulang dengan nada "pluck"
-// gaya xylophone/marimba — ritmis dan positif, cocok buat suasana tes minat
-// bakat yang fun, bukan drone panjang yang justru terkesan menyeramkan.
+// Musik latar versi lo-fi chill: akor jazzy hangat yang disaring lowpass filter
+// (biar kedengaran "muffled" khas lo-fi), tiap nada dobel osilator dengan sedikit
+// detune buat karakter electric-piano, ditambah tekstur vinyl/hiss sangat pelan.
 function startBackgroundMusic() {
   const ctx = getAudioContext();
   if (!ctx || musicPlaying) return;
@@ -627,55 +635,83 @@ function startBackgroundMusic() {
   musicMasterGain.gain.value = musicMuted ? 0 : MUSIC_VOLUME;
   musicMasterGain.connect(ctx.destination);
 
+  startVinylTexture(ctx);
+
   musicPlaying = true;
   scheduleNextChime();
+}
+
+// Tekstur noise pelan yang disaring lowpass — nuansa "vinyl crackle" khas lo-fi
+function startVinylTexture(ctx) {
+  const bufferSize = 2 * ctx.sampleRate;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  noiseSource = ctx.createBufferSource();
+  noiseSource.buffer = buffer;
+  noiseSource.loop = true;
+
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = "lowpass";
+  noiseFilter.frequency.value = 2200;
+
+  noiseGainNode = ctx.createGain();
+  noiseGainNode.gain.value = musicMuted ? 0 : NOISE_VOLUME;
+
+  noiseSource.connect(noiseFilter);
+  noiseFilter.connect(noiseGainNode);
+  noiseGainNode.connect(ctx.destination);
+  noiseSource.start();
 }
 
 function playChimeNote() {
   const ctx = getAudioContext();
   if (!ctx || !musicMasterGain) return;
 
-  const freq = MELODY[melodyIndex % MELODY.length];
-  melodyIndex++;
+  const chordFreqs = CHORDS[chordIndex % CHORDS.length];
+  chordIndex++;
 
   const now = ctx.currentTime;
-  const decay = 0.65;
+  const attack = 1.8;
+  const release = 3.5;
+  const sustainLevel = 0.4 / chordFreqs.length;
 
-  // Nada utama — sine wave hangat & lembut (bukan triangle yang lebih cerah/riang)
-  const osc = ctx.createOscillator();
-  osc.type = "sine";
-  osc.frequency.value = freq;
+  chordFreqs.forEach(function (freq) {
+    // Dua osilator sedikit di-detune untuk karakter hangat khas electric piano lo-fi
+    [-4, 4].forEach(function (detuneCents) {
+      const osc = ctx.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.value = freq;
+      osc.detune.value = detuneCents;
 
-  const g = ctx.createGain();
-  g.gain.setValueAtTime(0.0001, now);
-  g.gain.exponentialRampToValueAtTime(0.4, now + 0.015);
-  g.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+      // Lowpass filter membuat nada terdengar "muffled"/hangat, ciri khas lo-fi
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 1200;
+      filter.Q.value = 0.4;
 
-  osc.connect(g);
-  g.connect(musicMasterGain);
-  osc.start(now);
-  osc.stop(now + decay + 0.05);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(sustainLevel * 0.55, now + attack);
+      g.gain.setValueAtTime(sustainLevel * 0.55, now + CHORD_DURATION - release);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + CHORD_DURATION);
 
-  // Overtone oktaf sangat tipis, hanya sedikit kehangatan tambahan
-  const overtone = ctx.createOscillator();
-  overtone.type = "sine";
-  overtone.frequency.value = freq * 2;
-
-  const og = ctx.createGain();
-  og.gain.setValueAtTime(0.0001, now);
-  og.gain.exponentialRampToValueAtTime(0.07, now + 0.015);
-  og.gain.exponentialRampToValueAtTime(0.0001, now + decay * 0.6);
-
-  overtone.connect(og);
-  og.connect(musicMasterGain);
-  overtone.start(now);
-  overtone.stop(now + decay + 0.05);
+      osc.connect(filter);
+      filter.connect(g);
+      g.connect(musicMasterGain);
+      osc.start(now);
+      osc.stop(now + CHORD_DURATION + 0.2);
+    });
+  });
 }
 
 function scheduleNextChime() {
   if (!musicPlaying) return;
   playChimeNote();
-  musicTimeoutId = setTimeout(scheduleNextChime, NOTE_INTERVAL * 1000);
+  musicTimeoutId = setTimeout(scheduleNextChime, (CHORD_DURATION - 3) * 1000);
 }
 
 function setMusicIcon() {
@@ -696,6 +732,9 @@ function toggleMusic() {
   const ctx = getAudioContext();
   if (musicMasterGain && ctx) {
     musicMasterGain.gain.linearRampToValueAtTime(musicMuted ? 0 : MUSIC_VOLUME, ctx.currentTime + 0.4);
+  }
+  if (noiseGainNode && ctx) {
+    noiseGainNode.gain.linearRampToValueAtTime(musicMuted ? 0 : NOISE_VOLUME, ctx.currentTime + 0.4);
   }
   setMusicIcon();
 }
