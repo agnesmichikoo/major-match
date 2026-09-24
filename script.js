@@ -547,13 +547,15 @@ let noiseGainNode = null;
 const MUSIC_VOLUME = 0.16;
 const NOISE_VOLUME = 0.02; // tekstur vinyl/hiss sangat pelan, cuma nuansa
 
-// Progresi akor jazzy ii-V-I-vi (Dm7 - G7 - Cmaj7 - Am7) khas lo-fi,
-// register agak rendah supaya terasa hangat & "muffled".
+// Progresi akor jazzy ii-V-I-vi (Dm7 - G7 - Cmaj7 - Am7) khas lo-fi.
+// Register dinaikkan satu oktaf dari versi sebelumnya supaya tetap jernih
+// di speaker laptop/HP kecil (register terlalu rendah sebelumnya bikin
+// suaranya kedengaran "muddy"/nggak jelas alih-alih hangat).
 const CHORDS = [
-  [146.83, 174.61, 220.0, 261.63],  // Dm7
-  [196.0, 246.94, 293.66, 349.23],  // G7
-  [130.81, 164.81, 196.0, 246.94],  // Cmaj7
-  [110.0, 130.81, 164.81, 196.0]    // Am7
+  [293.66, 349.23, 440.0, 523.25],  // Dm7
+  [392.0, 493.88, 587.33, 698.46],  // G7
+  [261.63, 329.63, 392.0, 493.88],  // Cmaj7
+  [220.0, 261.63, 329.63, 392.0]    // Am7
 ];
 let chordIndex = 0;
 const CHORD_DURATION = 11; // detik tiap akor bertahan sebelum berpindah
@@ -680,18 +682,20 @@ function playChimeNote() {
   const sustainLevel = 0.4 / chordFreqs.length;
 
   chordFreqs.forEach(function (freq) {
-    // Dua osilator sedikit di-detune untuk karakter hangat khas electric piano lo-fi
-    [-4, 4].forEach(function (detuneCents) {
+    // Dua osilator sedikit di-detune (lebih halus dari sebelumnya) untuk
+    // karakter hangat khas electric piano lo-fi, tanpa membuatnya "fase"/pecah
+    [-2, 2].forEach(function (detuneCents) {
       const osc = ctx.createOscillator();
       osc.type = "triangle";
       osc.frequency.value = freq;
       osc.detune.value = detuneCents;
 
-      // Lowpass filter membuat nada terdengar "muffled"/hangat, ciri khas lo-fi
+      // Lowpass filter dengan cutoff lebih tinggi dari versi sebelumnya —
+      // tetap hangat tapi tidak sampai teredam/"muddy"
       const filter = ctx.createBiquadFilter();
       filter.type = "lowpass";
-      filter.frequency.value = 1200;
-      filter.Q.value = 0.4;
+      filter.frequency.value = 2000;
+      filter.Q.value = 0.3;
 
       const g = ctx.createGain();
       g.gain.setValueAtTime(0.0001, now);
