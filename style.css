@@ -698,8 +698,8 @@ input { font-family: inherit; }
   color: #FFFFFF;
   padding: 2px 10px;
   border-radius: 5px;
-  display: inline-block;
-  transform: rotate(-1deg);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 /* ---------- Social footer (Instagram) ---------- */
 .social-footer {
