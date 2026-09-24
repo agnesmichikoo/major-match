@@ -509,6 +509,7 @@ function handleUlangiTes() {
   }).then(function (result) {
     if (result.isConfirmed) {
       clearStateStorage();
+      renderQuestions();
       const namaInput = document.getElementById("input-nama-landing");
       if (namaInput) {
         namaInput.value = "";
@@ -521,6 +522,7 @@ function handleUlangiTes() {
 
 function handleKembaliBeranda() {
   clearStateStorage();
+  renderQuestions();
   const namaInput = document.getElementById("input-nama-landing");
   if (namaInput) {
     namaInput.value = "";
@@ -541,24 +543,23 @@ let musicTimeoutId = null;
 let musicPlaying = false;
 let musicMuted = false;
 let firstInteractionHandled = false;
-let noiseSource = null;
-let noiseGainNode = null;
 
-const MUSIC_VOLUME = 0.16;
-const NOISE_VOLUME = 0.02; // tekstur vinyl/hiss sangat pelan, cuma nuansa
+const MUSIC_VOLUME = 0.17;
 
-// Progresi akor jazzy ii-V-I-vi (Dm7 - G7 - Cmaj7 - Am7) khas lo-fi.
-// Register dinaikkan satu oktaf dari versi sebelumnya supaya tetap jernih
-// di speaker laptop/HP kecil (register terlalu rendah sebelumnya bikin
-// suaranya kedengaran "muddy"/nggak jelas alih-alih hangat).
-const CHORDS = [
-  [293.66, 349.23, 440.0, 523.25],  // Dm7
-  [392.0, 493.88, 587.33, 698.46],  // G7
-  [261.63, 329.63, 392.0, 493.88],  // Cmaj7
-  [220.0, 261.63, 329.63, 392.0]    // Am7
+// Progresi pop cerah & umum (C - G - Am - F) — dikenal sebagai "progresi pop"
+// karena dipakai di banyak lagu upbeat/motivating. Triad sederhana, register
+// menengah supaya jernih & enerjik, bukan mengambang seperti ambient.
+const POP_CHORDS = [
+  [261.63, 329.63, 392.0],  // C mayor
+  [196.0, 246.94, 293.66],  // G mayor
+  [220.0, 261.63, 329.63],  // A minor
+  [174.61, 220.0, 261.63]   // F mayor
 ];
-let chordIndex = 0;
-const CHORD_DURATION = 11; // detik tiap akor bertahan sebelum berpindah
+const BASS_ROOTS = [130.81, 98.0, 110.0, 87.31]; // C3, G2, A2, F2 — satu oktaf di bawah akor
+
+let stepIndex = 0;
+const STEP_DURATION = 0.25; // detik per langkah 1/8 not (120 BPM)
+const STEPS_PER_CHORD = 8;  // 1 birama per akor — pergantian akor terasa aktif
 
 function getAudioContext() {
   if (!audioCtx) {
@@ -626,14 +627,10 @@ function playCompletionSound() {
   }
 }
 
-// Musik latar versi lo-fi chill: akor jazzy hangat + ketukan drum lembut yang
-// konsisten. Tanpa ketukan, akor yang cuma "mengambang" di keheningan justru
-// kedengaran seperti musik ambient horor — ketukan inilah yang bikin telinga
-// dengar ini sebagai "musik beneran" (lo-fi study beat), bukan sound design.
-let beatStep = 0;
-let beatTimeoutId = null;
-const BEAT_DURATION = 0.75; // detik per ketukan (80 BPM)
-
+// Musik latar versi upbeat pop instrumental: arpeggio synth cerah yang terus
+// bergerak (bukan akor mengambang diam — itu yang bikin ngantuk), dipadu bass
+// line dan drum yang lebih hidup di tempo 120 BPM. Cocok buat vibe "musik app
+// produktivitas" — motivating tapi tidak berlebihan.
 function startBackgroundMusic() {
   const ctx = getAudioContext();
   if (!ctx || musicPlaying) return;
@@ -642,60 +639,79 @@ function startBackgroundMusic() {
   musicMasterGain.gain.value = musicMuted ? 0 : MUSIC_VOLUME;
   musicMasterGain.connect(ctx.destination);
 
-  startVinylTexture(ctx);
-
   musicPlaying = true;
-  scheduleNextChime();
-  beatStep = 0;
-  scheduleNextBeat();
+  stepIndex = 0;
+  scheduleNextStep();
 }
 
-// Tekstur noise pelan yang disaring lowpass — nuansa "vinyl crackle" khas lo-fi
-function startVinylTexture(ctx) {
-  const bufferSize = 2 * ctx.sampleRate;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
-
-  noiseSource = ctx.createBufferSource();
-  noiseSource.buffer = buffer;
-  noiseSource.loop = true;
-
-  const noiseFilter = ctx.createBiquadFilter();
-  noiseFilter.type = "lowpass";
-  noiseFilter.frequency.value = 2200;
-
-  noiseGainNode = ctx.createGain();
-  noiseGainNode.gain.value = musicMuted ? 0 : NOISE_VOLUME;
-
-  noiseSource.connect(noiseFilter);
-  noiseFilter.connect(noiseGainNode);
-  noiseGainNode.connect(ctx.destination);
-  noiseSource.start();
-}
-
-// Kick drum lembut — thump rendah dengan pitch turun cepat
-function playKick(ctx, time) {
+// Nada pluck cerah untuk arpeggio — serangan cepat, peluruhan pendek & jelas
+function playPluck(ctx, time, freq) {
   const osc = ctx.createOscillator();
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(130, time);
-  osc.frequency.exponentialRampToValueAtTime(45, time + 0.12);
+  osc.type = "triangle";
+  osc.frequency.value = freq;
+
+  const overtone = ctx.createOscillator();
+  overtone.type = "sine";
+  overtone.frequency.value = freq * 2;
 
   const g = ctx.createGain();
-  g.gain.setValueAtTime(0.5, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(0.22, time + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + 0.3);
+
+  const og = ctx.createGain();
+  og.gain.setValueAtTime(0.0001, time);
+  og.gain.exponentialRampToValueAtTime(0.06, time + 0.008);
+  og.gain.exponentialRampToValueAtTime(0.0001, time + 0.2);
+
+  osc.connect(g);
+  g.connect(musicMasterGain);
+  overtone.connect(og);
+  og.connect(musicMasterGain);
+
+  osc.start(time);
+  osc.stop(time + 0.32);
+  overtone.start(time);
+  overtone.stop(time + 0.22);
+}
+
+// Nada bass — fondasi ritme, sedikit lebih tahan lama dari pluck
+function playBass(ctx, time, freq) {
+  const osc = ctx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.value = freq;
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(0.3, time + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + 0.35);
 
   osc.connect(g);
   g.connect(musicMasterGain);
   osc.start(time);
-  osc.stop(time + 0.18);
+  osc.stop(time + 0.38);
 }
 
-// Snare/clap lembut — noise pendek yang disaring band-pass
+// Kick drum — thump dengan pitch turun cepat
+function playKick(ctx, time) {
+  const osc = ctx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(140, time);
+  osc.frequency.exponentialRampToValueAtTime(48, time + 0.11);
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.5, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+
+  osc.connect(g);
+  g.connect(musicMasterGain);
+  osc.start(time);
+  osc.stop(time + 0.17);
+}
+
+// Snare — noise pendek yang disaring band-pass
 function playSnare(ctx, time) {
-  const bufferSize = ctx.sampleRate * 0.15;
+  const bufferSize = ctx.sampleRate * 0.14;
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
@@ -706,23 +722,23 @@ function playSnare(ctx, time) {
 
   const filter = ctx.createBiquadFilter();
   filter.type = "bandpass";
-  filter.frequency.value = 1800;
+  filter.frequency.value = 1900;
   filter.Q.value = 0.8;
 
   const g = ctx.createGain();
-  g.gain.setValueAtTime(0.16, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.13);
+  g.gain.setValueAtTime(0.18, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
 
   noise.connect(filter);
   filter.connect(g);
   g.connect(musicMasterGain);
   noise.start(time);
-  noise.stop(time + 0.14);
+  noise.stop(time + 0.13);
 }
 
-// Hi-hat lembut — noise sangat pendek & tipis, cuma nuansa ritme
+// Hi-hat — noise sangat pendek & tipis, mengisi tiap 1/8 not biar terasa "jalan"
 function playHihat(ctx, time) {
-  const bufferSize = ctx.sampleRate * 0.05;
+  const bufferSize = ctx.sampleRate * 0.045;
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
@@ -733,84 +749,46 @@ function playHihat(ctx, time) {
 
   const filter = ctx.createBiquadFilter();
   filter.type = "highpass";
-  filter.frequency.value = 7000;
+  filter.frequency.value = 7500;
 
   const g = ctx.createGain();
-  g.gain.setValueAtTime(0.045, time);
-  g.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+  g.gain.setValueAtTime(0.05, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.035);
 
   noise.connect(filter);
   filter.connect(g);
   g.connect(musicMasterGain);
   noise.start(time);
-  noise.stop(time + 0.05);
+  noise.stop(time + 0.04);
 }
 
-// Pola 8 langkah (per 4 ketuk, dibagi delapan): kick di 1 & 3, snare di 2 & 4,
-// hi-hat lembut mengisi tiap ketukan "and" — pola lo-fi klasik yang simpel
-function scheduleNextBeat() {
+// Sequencer 1/8-not: tiap langkah mainkan nada arpeggio (bergerak terus, bukan
+// diam), kick+bass di ketuk 1 & 3, snare di ketuk 2 & 4, hi-hat tiap langkah.
+function scheduleNextStep() {
   if (!musicPlaying) return;
   const ctx = getAudioContext();
+
   if (ctx && musicMasterGain) {
     const now = ctx.currentTime;
-    const step = beatStep % 8;
+    const barStep = stepIndex % STEPS_PER_CHORD;
+    const chordIdx = Math.floor(stepIndex / STEPS_PER_CHORD) % POP_CHORDS.length;
+    const chord = POP_CHORDS[chordIdx];
+    const bassRoot = BASS_ROOTS[chordIdx];
 
-    if (step === 0 || step === 4) playKick(ctx, now);
-    if (step === 2 || step === 6) playSnare(ctx, now);
-    if (step % 2 === 1) playHihat(ctx, now);
+    playPluck(ctx, now, chord[barStep % chord.length]);
+
+    if (barStep === 0 || barStep === 4) {
+      playKick(ctx, now);
+      playBass(ctx, now, bassRoot);
+    }
+    if (barStep === 2 || barStep === 6) {
+      playSnare(ctx, now);
+    }
+    playHihat(ctx, now);
   }
 
-  beatStep++;
-  beatTimeoutId = setTimeout(scheduleNextBeat, (BEAT_DURATION / 2) * 1000);
-}
-
-function playChimeNote() {
-  const ctx = getAudioContext();
-  if (!ctx || !musicMasterGain) return;
-
-  const chordFreqs = CHORDS[chordIndex % CHORDS.length];
-  chordIndex++;
-
-  const now = ctx.currentTime;
-  const attack = 1.8;
-  const release = 3.5;
-  const sustainLevel = 0.4 / chordFreqs.length;
-
-  chordFreqs.forEach(function (freq) {
-    // Dua osilator sedikit di-detune (lebih halus dari sebelumnya) untuk
-    // karakter hangat khas electric piano lo-fi, tanpa membuatnya "fase"/pecah
-    [-2, 2].forEach(function (detuneCents) {
-      const osc = ctx.createOscillator();
-      osc.type = "triangle";
-      osc.frequency.value = freq;
-      osc.detune.value = detuneCents;
-
-      // Lowpass filter dengan cutoff lebih tinggi dari versi sebelumnya —
-      // tetap hangat tapi tidak sampai teredam/"muddy"
-      const filter = ctx.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.value = 2000;
-      filter.Q.value = 0.3;
-
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.0001, now);
-      g.gain.exponentialRampToValueAtTime(sustainLevel * 0.55, now + attack);
-      g.gain.setValueAtTime(sustainLevel * 0.55, now + CHORD_DURATION - release);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + CHORD_DURATION);
-
-      osc.connect(filter);
-      filter.connect(g);
-      g.connect(musicMasterGain);
-      osc.start(now);
-      osc.stop(now + CHORD_DURATION + 0.2);
-    });
-  });
-}
-
-function scheduleNextChime() {
-  if (!musicPlaying) return;
-  playChimeNote();
-  musicTimeoutId = setTimeout(scheduleNextChime, (CHORD_DURATION - 3) * 1000);
+  stepIndex++;
+  musicTimeoutId = setTimeout(scheduleNextStep, STEP_DURATION * 1000);
 }
 
 function setMusicIcon() {
@@ -831,9 +809,6 @@ function toggleMusic() {
   const ctx = getAudioContext();
   if (musicMasterGain && ctx) {
     musicMasterGain.gain.linearRampToValueAtTime(musicMuted ? 0 : MUSIC_VOLUME, ctx.currentTime + 0.4);
-  }
-  if (noiseGainNode && ctx) {
-    noiseGainNode.gain.linearRampToValueAtTime(musicMuted ? 0 : NOISE_VOLUME, ctx.currentTime + 0.4);
   }
   setMusicIcon();
 }
