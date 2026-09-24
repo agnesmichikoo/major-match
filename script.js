@@ -626,9 +626,14 @@ function playCompletionSound() {
   }
 }
 
-// Musik latar versi lo-fi chill: akor jazzy hangat yang disaring lowpass filter
-// (biar kedengaran "muffled" khas lo-fi), tiap nada dobel osilator dengan sedikit
-// detune buat karakter electric-piano, ditambah tekstur vinyl/hiss sangat pelan.
+// Musik latar versi lo-fi chill: akor jazzy hangat + ketukan drum lembut yang
+// konsisten. Tanpa ketukan, akor yang cuma "mengambang" di keheningan justru
+// kedengaran seperti musik ambient horor — ketukan inilah yang bikin telinga
+// dengar ini sebagai "musik beneran" (lo-fi study beat), bukan sound design.
+let beatStep = 0;
+let beatTimeoutId = null;
+const BEAT_DURATION = 0.75; // detik per ketukan (80 BPM)
+
 function startBackgroundMusic() {
   const ctx = getAudioContext();
   if (!ctx || musicPlaying) return;
@@ -641,6 +646,8 @@ function startBackgroundMusic() {
 
   musicPlaying = true;
   scheduleNextChime();
+  beatStep = 0;
+  scheduleNextBeat();
 }
 
 // Tekstur noise pelan yang disaring lowpass — nuansa "vinyl crackle" khas lo-fi
@@ -667,6 +674,94 @@ function startVinylTexture(ctx) {
   noiseFilter.connect(noiseGainNode);
   noiseGainNode.connect(ctx.destination);
   noiseSource.start();
+}
+
+// Kick drum lembut — thump rendah dengan pitch turun cepat
+function playKick(ctx, time) {
+  const osc = ctx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(130, time);
+  osc.frequency.exponentialRampToValueAtTime(45, time + 0.12);
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.5, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+
+  osc.connect(g);
+  g.connect(musicMasterGain);
+  osc.start(time);
+  osc.stop(time + 0.18);
+}
+
+// Snare/clap lembut — noise pendek yang disaring band-pass
+function playSnare(ctx, time) {
+  const bufferSize = ctx.sampleRate * 0.15;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = 1800;
+  filter.Q.value = 0.8;
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.16, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.13);
+
+  noise.connect(filter);
+  filter.connect(g);
+  g.connect(musicMasterGain);
+  noise.start(time);
+  noise.stop(time + 0.14);
+}
+
+// Hi-hat lembut — noise sangat pendek & tipis, cuma nuansa ritme
+function playHihat(ctx, time) {
+  const bufferSize = ctx.sampleRate * 0.05;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = "highpass";
+  filter.frequency.value = 7000;
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.045, time);
+  g.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+
+  noise.connect(filter);
+  filter.connect(g);
+  g.connect(musicMasterGain);
+  noise.start(time);
+  noise.stop(time + 0.05);
+}
+
+// Pola 8 langkah (per 4 ketuk, dibagi delapan): kick di 1 & 3, snare di 2 & 4,
+// hi-hat lembut mengisi tiap ketukan "and" — pola lo-fi klasik yang simpel
+function scheduleNextBeat() {
+  if (!musicPlaying) return;
+  const ctx = getAudioContext();
+  if (ctx && musicMasterGain) {
+    const now = ctx.currentTime;
+    const step = beatStep % 8;
+
+    if (step === 0 || step === 4) playKick(ctx, now);
+    if (step === 2 || step === 6) playSnare(ctx, now);
+    if (step % 2 === 1) playHihat(ctx, now);
+  }
+
+  beatStep++;
+  beatTimeoutId = setTimeout(scheduleNextBeat, (BEAT_DURATION / 2) * 1000);
 }
 
 function playChimeNote() {
